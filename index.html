@@ -9,22 +9,25 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
-        /* Solución real al borde: Usar shadow interior para que respete las curvas del botón */
         .tab-active { 
             background-color: #e0f2fe !important; 
             color: #0369a1 !important; 
-            box-shadow: inset 0 -4px 0 0 #0284c7; 
             font-weight: bold !important; 
+            border-bottom: 4px solid #0284c7;
         }
         @media (min-width: 768px) {
-            .tab-active { box-shadow: inset -4px 0 0 0 #0284c7; border: none; }
+            .tab-active { 
+                border-bottom: none; 
+                border-right: 4px solid #0284c7; 
+                border-top-right-radius: 0 !important; 
+                border-bottom-right-radius: 0 !important;
+            }
         }
         
         .card { background: white; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 1.5rem; }
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Animaciones para Pantalla de Carga y Alertas */
         #loader { transition: opacity 0.4s ease; }
         
         .toast { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -33,18 +36,26 @@
         
         #confirm-modal { transition: opacity 0.3s ease; }
         #confirm-box { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .table-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .table-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+        .table-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+        .table-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="flex flex-col md:flex-row h-screen bg-slate-50 text-slate-800 overflow-hidden">
 
+    <!-- PANTALLA DE CARGA -->
     <div id="loader" class="fixed inset-0 z-[100] bg-slate-50 flex flex-col items-center justify-center">
         <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
         <h2 class="text-xl font-bold text-slate-700">Conectando con Google Sheets...</h2>
         <p class="text-sm text-slate-500 mt-2">Sincronizando base de datos</p>
     </div>
 
+    <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
     <div id="toast-container" class="fixed top-5 right-5 z-[110] flex flex-col gap-2"></div>
 
+    <!-- VENTANA MODAL PARA CONFIRMAR ELIMINACIÓN -->
     <div id="confirm-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[120] flex items-center justify-center hidden opacity-0">
         <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 transform scale-95" id="confirm-box">
             <h3 class="text-lg font-bold text-slate-800 mb-2">Confirmar Acción</h3>
@@ -56,6 +67,7 @@
         </div>
     </div>
 
+    <!-- MENÚ LATERAL -->
     <aside class="w-full md:w-64 bg-white border-b md:border-r border-slate-200 flex flex-col z-20 shadow-sm shrink-0">
         <div class="p-4 md:p-6 border-b border-slate-100">
             <div class="bg-slate-800 text-white px-4 py-2 rounded font-black tracking-widest text-lg w-full text-center">ALUNA</div>
@@ -70,7 +82,7 @@
         </div>
         <nav class="flex md:flex-col overflow-x-auto hide-scroll p-2 md:p-4 gap-2 md:space-y-2 whitespace-nowrap">
             <button onclick="switchTab('dashboard')" id="btn-dashboard" class="flex-1 md:w-full text-center md:text-left px-4 py-3 rounded-lg text-slate-600 transition tab-active text-sm md:text-base">
-                📊 Graficos
+                📊 Gráficas
             </button>
             <button onclick="switchTab('registro')" id="btn-registro" class="flex-1 md:w-full text-center md:text-left px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition text-sm md:text-base">
                 🗂️ Registrar Contenido
@@ -78,136 +90,131 @@
         </nav>
     </aside>
 
+    <!-- CONTENEDOR PRINCIPAL -->
     <main class="flex-1 overflow-y-auto p-4 md:p-8 w-full">
 
+        <!-- VISTA 1: DASHBOARD -->
         <section id="vista-dashboard" class="max-w-5xl mx-auto space-y-6 hidden">
             <h1 class="text-2xl font-bold text-slate-800 border-b pb-4">Volumen de Contenidos Registrados</h1>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- KPIs GLOBALES -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="card text-center flex flex-col justify-center border-t-4 border-t-purple-500">
+                    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Vistas totales de la página</h2>
+                    <p id="kpi-vistas-totales" class="text-3xl font-black text-purple-600 mt-2">0</p>
+                    <p class="text-[10px] text-slate-400 mt-2">Muestra el volumen acumulado de accesos al sitio.</p>
+                </div>
+                <div class="card text-center flex flex-col justify-center border-t-4 border-t-amber-500">
+                    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Lecturas totales</h2>
+                    <p id="kpi-lecturas-totales" class="text-3xl font-black text-amber-600 mt-2">0</p>
+                    <p class="text-[10px] text-slate-400 mt-2">Suma automática del historial de Lecturas Anuales.</p>
+                </div>
                 <div class="card text-center flex flex-col justify-center border-t-4 border-t-sky-500">
-                    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wide">Total Artículos</h2>
-                    <p id="kpi-articulos" class="text-5xl font-black text-sky-600 mt-2">0</p>
-                    <p class="text-[10px] text-slate-400 mt-2">Cuenta automáticamente cuántos registros están etiquetados como "Artículo".</p>
+                    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Total Artículos</h2>
+                    <p id="kpi-articulos" class="text-3xl font-black text-sky-600 mt-2">0</p>
+                    <p class="text-[10px] text-slate-400 mt-2">Calcula automáticamente el total de artículos en inventario.</p>
                 </div>
                 <div class="card text-center flex flex-col justify-center border-t-4 border-t-emerald-500">
-                    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wide">Total Cuentos</h2>
-                    <p id="kpi-cuentos" class="text-5xl font-black text-emerald-600 mt-2">0</p>
-                    <p class="text-[10px] text-slate-400 mt-2">Cuenta automáticamente cuántos registros están etiquetados como "Cuento".</p>
+                    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Total Cuentos</h2>
+                    <p id="kpi-cuentos" class="text-3xl font-black text-emerald-600 mt-2">0</p>
+                    <p class="text-[10px] text-slate-400 mt-2">Calcula automáticamente el total de cuentos en inventario.</p>
                 </div>
             </div>
 
+            <!-- Gráficas Separadas -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Gráfica 1: Proporción -->
                 <div class="card">
                     <h2 class="text-sm font-bold text-slate-700 mb-4 text-center">Distribución del Contenido</h2>
                     <div class="h-64 relative w-full"><canvas id="chartProporcion"></canvas></div>
                     <div class="mt-6 text-xs text-slate-600 bg-slate-50 p-3 rounded border border-slate-100">
                         <p><strong>¿Qué muestra?</strong> Un anillo dividido que representa el 100% de tus publicaciones (Artículos vs Cuentos).</p>
-                        <p class="mt-2"><strong>¿Para qué sirve?</strong> Permite ver de un solo vistazo hacia dónde se está inclinando el esfuerzo de producción. Si el color azul ocupa la mayoría, el sitio es predominantemente informativo; esta gráfica te avisará visualmente cuándo debes publicar más cuentos para equilibrarlo.</p>
                     </div>
                 </div>
                 
+                <!-- Gráfica 2: Lecturas Anuales -->
                 <div class="card">
                     <h2 class="text-sm font-bold text-slate-700 mb-4 text-center">Lecturas Anuales</h2>
                     <div class="h-64 relative w-full"><canvas id="chartAnuales"></canvas></div>
                     <div class="mt-6 text-xs text-slate-600 bg-slate-50 p-3 rounded border border-slate-100">
-                        <p><strong>¿Qué muestra?</strong> Columnas donde cada barra representa un año distinto. La altura equivale a las "Lecturas Totales" de ese periodo.</p>
-                        <p class="mt-2"><strong>¿Para qué sirve?</strong> Es la radiografía del crecimiento del portal a lo largo de los años. Permite identificar rápidamente cuál ha sido el "año pico" y analizar la tendencia histórica del consumo de lectura.</p>
+                        <p><strong>¿Qué muestra?</strong> Columnas donde cada barra representa un año distinto.</p>
                     </div>
                 </div>
             </div>
 
+            <!-- Gráfica 3: Lecturas Últimos 13 Meses -->
             <div class="card">
-                <h2 class="text-sm font-bold text-slate-700 mb-4 text-center">Total de Usuarios y Sesiones (Anual)</h2>
-                <div class="h-64 relative w-full"><canvas id="chartUsuariosSesiones"></canvas></div>
+                <h2 class="text-sm font-bold text-slate-700 mb-4 text-center uppercase tracking-wide">Lecturas de los Últimos 13 Meses</h2>
+                <div class="h-72 relative w-full"><canvas id="chartLecturasMensuales"></canvas></div>
                 <div class="mt-6 text-xs text-slate-600 bg-slate-50 p-3 rounded border border-slate-100">
-                    <p><strong>¿Qué muestra?</strong> Dos líneas de tiempo superpuestas que avanzan año tras año. (Morado = Usuarios | Naranja = Sesiones).</p>
-                    <p class="mt-2"><strong>¿Para qué sirve?</strong> Es la gráfica más importante para medir la fidelidad y retención del público. <strong>Regla de oro:</strong> La línea de "Sesiones" siempre debe estar por encima de la de "Usuarios". Si tienes 10.000 usuarios y 30.000 sesiones, significa que las personas descubren ALUNA, les gusta, y regresan constantemente.</p>
+                    <p><strong>¿Qué muestra?</strong> Una ventana móvil automática de los 13 meses más recientes a partir del último registro en la base de datos.</p>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
-                    <h2 id="titulo-cuentos-vs" class="text-sm font-bold text-slate-700 text-center md:text-left">Cuentos Infantiles (Comparativa Mensual)</h2>
-                    <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded border border-slate-200 w-full md:w-auto justify-center">
-                        <select id="select-year-1" onchange="renderChartCuentos()" class="text-xs bg-white border border-slate-300 rounded p-1 outline-none font-bold text-blue-500 cursor-pointer"></select>
-                        <span class="text-xs font-bold text-slate-400">VS</span>
-                        <select id="select-year-2" onchange="renderChartCuentos()" class="text-xs bg-white border border-slate-300 rounded p-1 outline-none font-bold text-blue-700 cursor-pointer"></select>
-                    </div>
-                </div>
-
-                <div class="h-64 relative w-full"><canvas id="chartCuentosVs"></canvas></div>
-                
-                <div class="mt-6 text-xs text-slate-600 bg-slate-50 p-3 rounded border border-slate-100">
-                    <p><strong>¿Qué muestra?</strong> Una gráfica combinada mensual comparando <strong>los dos años seleccionados en los filtros superiores</strong>. Las <strong>barras</strong> representan las Vistas. Las <strong>líneas</strong> representan las Sesiones.</p>
-                    <p class="mt-2"><strong>¿Para qué sirve?</strong> Al tener un selector de años, puedes evaluar inmediatamente el comportamiento histórico cruzando cualquier periodo de la base de datos (Ej: 2025 vs 2027) sin perder jamás acceso a la información antigua.</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
-                    <h2 id="titulo-cuentos-juv-vs" class="text-sm font-bold text-slate-700 text-center md:text-left">Cuentos Juveniles (Comparativa Mensual)</h2>
-                    <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded border border-slate-200 w-full md:w-auto justify-center">
-                        <select id="select-year-juv-1" onchange="renderChartCuentosJuv()" class="text-xs bg-white border border-slate-300 rounded p-1 outline-none font-bold text-blue-500 cursor-pointer"></select>
-                        <span class="text-xs font-bold text-slate-400">VS</span>
-                        <select id="select-year-juv-2" onchange="renderChartCuentosJuv()" class="text-xs bg-white border border-slate-300 rounded p-1 outline-none font-bold text-blue-700 cursor-pointer"></select>
-                    </div>
-                </div>
-
-                <div class="h-64 relative w-full"><canvas id="chartCuentosJuvVs"></canvas></div>
-                
-                <div class="mt-6 text-xs text-slate-600 bg-slate-50 p-3 rounded border border-slate-100">
-                    <p><strong>¿Qué muestra?</strong> Una gráfica combinada mensual comparando <strong>los dos años seleccionados en los filtros superiores</strong>. Las <strong>barras</strong> representan las Vistas. Las <strong>líneas</strong> representan las Sesiones para Cuentos Juveniles.</p>
-                    <p class="mt-2"><strong>¿Para qué sirve?</strong> Para evaluar el impacto específico de la estrategia juvenil mes a mes, cruzando cualquier periodo de la base de datos de manera idéntica al apartado infantil.</p>
+            <!-- TABLA DE LOS MÁS LEÍDOS (>1000 LECTURAS) -->
+            <div class="card p-0 overflow-hidden border-none shadow-md">
+                <h2 class="text-lg font-bold text-slate-800 p-4 border-b bg-white">Cuentos y Artículos que tienen más de 1000 lecturas</h2>
+                <div class="overflow-auto table-scroll max-h-[350px]">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-[#b3d495] text-slate-800 sticky top-0 z-10 shadow-sm">
+                            <tr>
+                                <th class="p-3 w-12 text-center font-bold">#</th>
+                                <th class="p-3 font-bold">Artículo / Cuento</th>
+                                <th class="p-3 text-right font-bold w-32">Lecturas ▼</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-top-contenidos" class="divide-y divide-slate-100 bg-white">
+                            <!-- Inyectado por JS -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
-                    <h2 id="titulo-articulos-vs" class="text-sm font-bold text-slate-700 text-center md:text-left">Artículos (Comparativa Mensual)</h2>
-                    <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded border border-slate-200 w-full md:w-auto justify-center">
-                        <select id="select-year-art-1" onchange="renderChartArticulos()" class="text-xs bg-white border border-slate-300 rounded p-1 outline-none font-bold text-blue-500 cursor-pointer"></select>
-                        <span class="text-xs font-bold text-slate-400">VS</span>
-                        <select id="select-year-art-2" onchange="renderChartArticulos()" class="text-xs bg-white border border-slate-300 rounded p-1 outline-none font-bold text-blue-700 cursor-pointer"></select>
-                    </div>
+            <!-- NUEVO: KPIs DE BAJAS LECTURAS (DE ÚLTIMAS) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                <div class="card text-center flex flex-col justify-center border-t-4 border-t-rose-500 shadow-md">
+                    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Artículos por debajo de 500 lecturas</h2>
+                    <p id="kpi-articulos-bajos" class="text-4xl font-black text-rose-600 mt-2">0</p>
                 </div>
-
-                <div class="h-64 relative w-full"><canvas id="chartArticulosVs"></canvas></div>
-                
-                <div class="mt-6 text-xs text-slate-600 bg-slate-50 p-3 rounded border border-slate-100">
-                    <p><strong>¿Qué muestra?</strong> Una gráfica combinada mensual comparando <strong>los dos años seleccionados en los filtros superiores</strong>. Las <strong>barras</strong> representan las Vistas. Las <strong>líneas</strong> representan las Sesiones para Artículos.</p>
-                    <p class="mt-2"><strong>¿Para qué sirve?</strong> Para evaluar el impacto específico del contenido informativo/investigativo (Artículos) mes a mes, cruzando cualquier periodo de la base de datos de manera idéntica a las secciones de cuentos.</p>
+                <div class="card text-center flex flex-col justify-center border-t-4 border-t-orange-500 shadow-md">
+                    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Cuentos por debajo de 100 lecturas</h2>
+                    <p id="kpi-cuentos-bajos" class="text-4xl font-black text-orange-600 mt-2">0</p>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
-                    <h2 id="titulo-us-mensual-vs" class="text-sm font-bold text-slate-700 text-center md:text-left">Total de Usuarios (Comparativa Mensual)</h2>
-                    <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded border border-slate-200 w-full md:w-auto justify-center">
-                        <select id="select-year-us-mensual-1" onchange="renderChartUsuariosTotales()" class="text-xs bg-white border border-slate-300 rounded p-1 outline-none font-bold text-purple-500 cursor-pointer"></select>
-                        <span class="text-xs font-bold text-slate-400">VS</span>
-                        <select id="select-year-us-mensual-2" onchange="renderChartUsuariosTotales()" class="text-xs bg-white border border-slate-300 rounded p-1 outline-none font-bold text-purple-700 cursor-pointer"></select>
-                    </div>
-                </div>
-
-                <div class="h-64 relative w-full"><canvas id="chartUsuariosTotalesVs"></canvas></div>
-                
-                <div class="mt-6 text-xs text-slate-600 bg-slate-50 p-3 rounded border border-slate-100">
-                    <p><strong>¿Qué muestra?</strong> Una gráfica mensual comparando <strong>los dos años seleccionados en los filtros superiores</strong>. Las columnas representan el Total de Usuarios.</p>
-                    <p class="mt-2"><strong>¿Para qué sirve?</strong> Para evaluar el volumen de tráfico general y la capacidad de atracción del sitio (personas únicas) mes a mes, detectando estacionalidades o meses de alto impacto.</p>
-                </div>
-            </div>
         </section>
 
+        <!-- VISTA 2: REGISTRO DE INVENTARIO -->
         <section id="vista-registro" class="max-w-5xl mx-auto space-y-6 hidden pb-12">
-            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4">Registrar Nuevo Artículo o Cuento</h1>
             
+            <!-- APARTADO 0: MÉTRICAS GLOBALES GENERALES -->
+            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4">Actualizar Métricas Globales</h1>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="card lg:col-span-1 h-fit">
+                    <form id="formMetricasGlobales" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Vistas totales de la página</label>
+                            <input type="number" id="input-vistas-global" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
+                            <p class="text-[10px] text-slate-500 mt-1">Escribe aquí la cifra acumulada de accesos totales.</p>
+                        </div>
+                        <button type="submit" id="btn-guardar-globales" class="w-full bg-purple-600 text-white font-bold py-3 rounded hover:bg-purple-700 text-sm transition mt-2">
+                            Actualizar Vistas
+                        </button>
+                    </form>
+                </div>
+                <div class="card lg:col-span-2 flex flex-col justify-center bg-slate-50/50 border border-dashed border-slate-300 p-6 text-center">
+                    <p class="text-sm text-slate-600 font-medium">Estas métricas representan los acumulados históricos absolutos del portal y se verán reflejadas directamente en la parte superior del Dashboard de Gráficas.</p>
+                </div>
+            </div>
+
+            <!-- APARTADO 1: INVENTARIO DE CONTENIDOS -->
+            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-8">Registrar Nuevo Artículo o Cuento (Inventario)</h1>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="card lg:col-span-1 h-fit">
                     <form id="formContenido" class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-600 mb-1">Título de la publicación</label>
                             <input type="text" id="input-titulo" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-sky-500 outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">El nombre oficial de la publicación.</p>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-600 mb-1">Tipo de Contenido</label>
@@ -215,24 +222,21 @@
                                 <option value="Articulo">Artículo</option>
                                 <option value="Cuento">Cuento</option>
                             </select>
-                            <p class="text-[10px] text-slate-500 mt-1">Clasifica el contenido para separar el rendimiento de cada estrategia.</p>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-600 mb-1">ID</label>
                             <input type="number" id="input-id" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Un número único e irrepetible para mantener el orden exacto.</p>
                         </div>
                         <button type="submit" id="btn-guardar-form" class="w-full bg-slate-800 text-white font-bold py-3 rounded hover:bg-slate-700 text-sm transition mt-2">
                             Guardar Contenido
                         </button>
                     </form>
                 </div>
-
                 <div class="card lg:col-span-2">
                     <h2 class="text-sm font-bold text-slate-700 mb-4">Base de Datos de Publicaciones</h2>
-                    <div class="overflow-x-auto border rounded">
+                    <div class="overflow-auto border rounded table-scroll max-h-[350px]">
                         <table class="w-full text-sm text-left min-w-[500px]">
-                            <thead class="bg-slate-50 sticky top-0 shadow-sm">
+                            <thead class="bg-slate-50 sticky top-0 shadow-sm z-10">
                                 <tr>
                                     <th class="p-3 border-b text-slate-500">Categoría</th>
                                     <th class="p-3 border-b text-slate-500">ID</th>
@@ -247,32 +251,29 @@
                 </div>
             </div>
 
+            <!-- APARTADO 2: LECTURAS ANUALES -->
             <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Lecturas Anuales</h1>
-            
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="card lg:col-span-1 h-fit">
                     <form id="formLecturasAnuales" class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-600 mb-1">Año</label>
                             <input type="number" id="input-año" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-emerald-500 outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Periodo de 365 días (Ej: 2024).</p>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-600 mb-1">Lecturas Totales</label>
                             <input type="number" id="input-lecturas-anuales" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Suma bruta de cuántas veces se leyeron los contenidos en el año.</p>
                         </div>
                         <button type="submit" id="btn-guardar-anuales" class="w-full bg-emerald-600 text-white font-bold py-3 rounded hover:bg-emerald-700 text-sm transition mt-2">
                             Guardar Lecturas
                         </button>
                     </form>
                 </div>
-
                 <div class="card lg:col-span-2">
                     <h2 class="text-sm font-bold text-slate-700 mb-4">Base de Datos de Lecturas Anuales</h2>
-                    <div class="overflow-x-auto border rounded">
+                    <div class="overflow-auto border rounded table-scroll max-h-[350px]">
                         <table class="w-full text-sm text-left min-w-[400px]">
-                            <thead class="bg-slate-50 sticky top-0 shadow-sm">
+                            <thead class="bg-slate-50 sticky top-0 shadow-sm z-10">
                                 <tr>
                                     <th class="p-3 border-b text-slate-500">Año</th>
                                     <th class="p-3 border-b text-slate-500">Lecturas Totales</th>
@@ -286,261 +287,123 @@
                 </div>
             </div>
 
-            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Usuarios y Sesiones (Anual)</h1>
-            
+            <!-- APARTADO 3: LECTURAS MENSUALES -->
+            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Lecturas Mensuales</h1>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="card lg:col-span-1 h-fit">
-                    <form id="formUsuariosSesiones" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Año</label>
-                            <input type="number" id="input-año-us" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-purple-500 outline-none">
+                    <form id="formLecturasMensuales" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Año</label>
+                                <input type="number" id="input-año-lm" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-green-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Mes</label>
+                                <select id="input-mes-lm" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-green-500 outline-none">
+                                    <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
+                                </select>
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Total de Usuarios</label>
-                            <input type="number" id="input-usuarios" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Número de personas únicas que entraron a ALUNA en todo el año.</p>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Artículos Leídos</label>
+                            <input type="number" id="input-articulos-lm" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-green-500 outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Total de Sesiones</label>
-                            <input type="number" id="input-sesiones" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Número de visitas anuales. Si un usuario entra 2 veces en el día, son 2 sesiones.</p>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Cuentos Leídos</label>
+                            <input type="number" id="input-cuentos-lm" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-green-500 outline-none">
                         </div>
-                        <button type="submit" id="btn-guardar-us" class="w-full bg-purple-600 text-white font-bold py-3 rounded hover:bg-purple-700 text-sm transition mt-2">
-                            Guardar Datos
+                        <button type="submit" id="btn-guardar-lm" class="w-full bg-[#4d8b31] text-white font-bold py-3 rounded hover:bg-[#3d6e27] text-sm transition mt-2">
+                            Guardar Mes
                         </button>
                     </form>
                 </div>
-
                 <div class="card lg:col-span-2">
-                    <h2 class="text-sm font-bold text-slate-700 mb-4">Base de Datos de Usuarios y Sesiones</h2>
-                    <div class="overflow-x-auto border rounded">
+                    <h2 class="text-sm font-bold text-slate-700 mb-4">Base de Datos Mensual Histórica</h2>
+                    <div class="overflow-auto border rounded table-scroll max-h-[350px]">
                         <table class="w-full text-sm text-left min-w-[500px]">
-                            <thead class="bg-slate-50 sticky top-0 shadow-sm">
-                                <tr>
-                                    <th class="p-3 border-b text-slate-500">Año</th>
-                                    <th class="p-3 border-b text-slate-500">Usuarios</th>
-                                    <th class="p-3 border-b text-slate-500">Sesiones</th>
-                                    <th class="p-3 border-b text-slate-500 text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-usuarios-sesiones" class="divide-y">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Cuentos Infantiles (Mes a Mes)</h1>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="card lg:col-span-1 h-fit">
-                    <form id="formCuentosVs" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Año</label>
-                            <input type="number" id="input-año-cuentos" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-blue-500 outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Digita el año a registrar (Ej: 2027).</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Mes</label>
-                            <select id="input-mes-cuentos" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-blue-500 outline-none">
-                                <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
-                            </select>
-                            <p class="text-[10px] text-slate-500 mt-1">Mes correspondiente al registro.</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Vistas</label>
-                            <input type="number" id="input-vistas-cuentos" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Vistas totales en cuentos infantiles durante ese mes.</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Sesiones</label>
-                            <input type="number" id="input-sesiones-cuentos" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Sesiones totales en cuentos infantiles durante ese mes.</p>
-                        </div>
-                        <button type="submit" id="btn-guardar-cuentos" class="w-full bg-blue-600 text-white font-bold py-3 rounded hover:bg-blue-700 text-sm transition mt-2">
-                            Guardar Datos
-                        </button>
-                    </form>
-                </div>
-
-                <div class="card lg:col-span-2">
-                    <h2 class="text-sm font-bold text-slate-700 mb-4">Base de Datos de Cuentos Infantiles</h2>
-                    <div class="overflow-x-auto border rounded">
-                        <table class="w-full text-sm text-left min-w-[500px]">
-                            <thead class="bg-slate-50 sticky top-0 shadow-sm">
+                            <thead class="bg-slate-50 sticky top-0 shadow-sm z-10">
                                 <tr>
                                     <th class="p-3 border-b text-slate-500">Año</th>
                                     <th class="p-3 border-b text-slate-500">Mes</th>
-                                    <th class="p-3 border-b text-slate-500">Vistas</th>
-                                    <th class="p-3 border-b text-slate-500">Sesiones</th>
+                                    <th class="p-3 border-b text-slate-500">Artículos</th>
+                                    <th class="p-3 border-b text-slate-500">Cuentos</th>
+                                    <th class="p-3 border-b text-slate-500 font-bold text-green-700">Total</th>
                                     <th class="p-3 border-b text-slate-500 text-center">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabla-cuentos-vs" class="divide-y">
+                            <tbody id="tabla-lecturas-mensuales" class="divide-y">
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Cuentos Juveniles (Mes a Mes)</h1>
-            
+            <!-- APARTADO 4: TOP CONTENIDOS MANUAL -->
+            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Top de Contenidos (>1000 lecturas)</h1>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="card lg:col-span-1 h-fit">
-                    <form id="formCuentosJuvVs" class="space-y-4">
+                    <form id="formTopContenidos" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Año</label>
-                            <input type="number" id="input-año-cuentos-juv" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-blue-500 outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Digita el año a registrar (Ej: 2027).</p>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Título de la publicación</label>
+                            <input type="text" id="input-titulo-top" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-lime-500 outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Mes</label>
-                            <select id="input-mes-cuentos-juv" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-blue-500 outline-none">
-                                <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
-                            </select>
-                            <p class="text-[10px] text-slate-500 mt-1">Mes correspondiente al registro.</p>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Lecturas</label>
+                            <input type="number" id="input-lecturas-top" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-lime-500 outline-none">
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Vistas</label>
-                            <input type="number" id="input-vistas-cuentos-juv" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Vistas totales en cuentos juveniles durante ese mes.</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Sesiones</label>
-                            <input type="number" id="input-sesiones-cuentos-juv" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Sesiones totales en cuentos juveniles durante ese mes.</p>
-                        </div>
-                        <button type="submit" id="btn-guardar-cuentos-juv" class="w-full bg-blue-600 text-white font-bold py-3 rounded hover:bg-blue-700 text-sm transition mt-2">
-                            Guardar Datos
+                        <button type="submit" id="btn-guardar-top" class="w-full bg-[#8fb36d] text-white font-bold py-3 rounded hover:bg-[#7a9a5c] text-sm transition mt-2">
+                            Guardar en el Top
                         </button>
                     </form>
                 </div>
-
                 <div class="card lg:col-span-2">
-                    <h2 class="text-sm font-bold text-slate-700 mb-4">Base de Datos de Cuentos Juveniles</h2>
-                    <div class="overflow-x-auto border rounded">
-                        <table class="w-full text-sm text-left min-w-[500px]">
-                            <thead class="bg-slate-50 sticky top-0 shadow-sm">
-                                <tr>
-                                    <th class="p-3 border-b text-slate-500">Año</th>
-                                    <th class="p-3 border-b text-slate-500">Mes</th>
-                                    <th class="p-3 border-b text-slate-500">Vistas</th>
-                                    <th class="p-3 border-b text-slate-500">Sesiones</th>
-                                    <th class="p-3 border-b text-slate-500 text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-cuentos-juv-vs" class="divide-y">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Artículos (Mes a Mes)</h1>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="card lg:col-span-1 h-fit">
-                    <form id="formArticulosVs" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Año</label>
-                            <input type="number" id="input-año-articulos" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-blue-500 outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Digita el año a registrar (Ej: 2027).</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Mes</label>
-                            <select id="input-mes-articulos" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-blue-500 outline-none">
-                                <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
-                            </select>
-                            <p class="text-[10px] text-slate-500 mt-1">Mes correspondiente al registro.</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Vistas</label>
-                            <input type="number" id="input-vistas-articulos" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Vistas totales en artículos durante ese mes.</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Sesiones</label>
-                            <input type="number" id="input-sesiones-articulos" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Sesiones totales en artículos durante ese mes.</p>
-                        </div>
-                        <button type="submit" id="btn-guardar-articulos" class="w-full bg-blue-600 text-white font-bold py-3 rounded hover:bg-blue-700 text-sm transition mt-2">
-                            Guardar Datos
-                        </button>
-                    </form>
-                </div>
-
-                <div class="card lg:col-span-2">
-                    <h2 class="text-sm font-bold text-slate-700 mb-4">Base de Datos de Artículos</h2>
-                    <div class="overflow-x-auto border rounded">
-                        <table class="w-full text-sm text-left min-w-[500px]">
-                            <thead class="bg-slate-50 sticky top-0 shadow-sm">
-                                <tr>
-                                    <th class="p-3 border-b text-slate-500">Año</th>
-                                    <th class="p-3 border-b text-slate-500">Mes</th>
-                                    <th class="p-3 border-b text-slate-500">Vistas</th>
-                                    <th class="p-3 border-b text-slate-500">Sesiones</th>
-                                    <th class="p-3 border-b text-slate-500 text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-articulos-vs" class="divide-y">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Total de Usuarios (Mes a Mes)</h1>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="card lg:col-span-1 h-fit">
-                    <form id="formUsuariosTotalesVs" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Año</label>
-                            <input type="number" id="input-año-us-mensual" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-purple-500 outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Digita el año a registrar (Ej: 2027).</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Mes</label>
-                            <select id="input-mes-us-mensual" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-purple-500 outline-none">
-                                <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
-                            </select>
-                            <p class="text-[10px] text-slate-500 mt-1">Mes correspondiente al registro.</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Total de Usuarios</label>
-                            <input type="number" id="input-usuarios-mensual" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Personas únicas que entraron al sitio este mes.</p>
-                        </div>
-                        <button type="submit" id="btn-guardar-us-mensual" class="w-full bg-purple-600 text-white font-bold py-3 rounded hover:bg-purple-700 text-sm transition mt-2">
-                            Guardar Datos
-                        </button>
-                    </form>
-                </div>
-
-                <div class="card lg:col-span-2">
-                    <h2 class="text-sm font-bold text-slate-700 mb-4">Base de Datos de Usuarios Totales Mensuales</h2>
-                    <div class="overflow-x-auto border rounded">
+                    <h2 class="text-sm font-bold text-slate-700 mb-4">Base de Datos: Top Contenidos</h2>
+                    <div class="overflow-auto border rounded table-scroll max-h-[350px]">
                         <table class="w-full text-sm text-left min-w-[400px]">
-                            <thead class="bg-slate-50 sticky top-0 shadow-sm">
+                            <thead class="bg-slate-50 sticky top-0 shadow-sm z-10">
                                 <tr>
-                                    <th class="p-3 border-b text-slate-500">Año</th>
-                                    <th class="p-3 border-b text-slate-500">Mes</th>
-                                    <th class="p-3 border-b text-slate-500">Usuarios</th>
+                                    <th class="p-3 border-b text-slate-500">Título</th>
+                                    <th class="p-3 border-b text-slate-500 text-right">Lecturas</th>
                                     <th class="p-3 border-b text-slate-500 text-center">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabla-us-vs" class="divide-y">
+                            <tbody id="tabla-registro-top" class="divide-y">
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
+
+            <!-- APARTADO NUEVO: CONTENIDOS CON BAJAS LECTURAS -->
+            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Alertas de Bajas Lecturas</h1>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="card lg:col-span-1 h-fit">
+                    <form id="formBajasLecturas" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Artículos con menos de 500 lecturas</label>
+                            <input type="number" id="input-articulos-bajos" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-rose-500 outline-none">
+                            <p class="text-[10px] text-slate-500 mt-1">Escribe la cantidad de artículos que cumplen esto.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Cuentos con menos de 100 lecturas</label>
+                            <input type="number" id="input-cuentos-bajos" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-orange-500 outline-none">
+                            <p class="text-[10px] text-slate-500 mt-1">Escribe la cantidad de cuentos que cumplen esto.</p>
+                        </div>
+                        <button type="submit" id="btn-guardar-bajos" class="w-full bg-rose-600 text-white font-bold py-3 rounded hover:bg-rose-700 text-sm transition mt-2">
+                            Guardar Alertas
+                        </button>
+                    </form>
+                </div>
+                <div class="card lg:col-span-2 flex flex-col justify-center bg-slate-50/50 border border-dashed border-slate-300 p-6 text-center">
+                    <p class="text-sm text-slate-600 font-medium">Estos datos se ingresan manualmente para monitorear el volumen de los contenidos que requieren mayor atención o difusión estratégica. Aparecerán en la parte inferior del Dashboard.</p>
+                </div>
+            </div>
+
         </section>
 
     </main>
 
     <script>
-        // PEGA AQUÍ TU ENLACE DE GOOGLE APPS SCRIPT
         const URL_GOOGLE_SHEETS = "https://script.google.com/macros/s/AKfycbzV6SZiurwlxLDBkmGe_JOJYPs3tNZlYsqRAGTHIuo0pQ_7CF4Nu8ivmJ9vGs9dfD6b/exec"; 
 
         // --- SISTEMA DE ALERTAS Y CONFIRMACIONES ---
@@ -588,22 +451,17 @@
             });
         }
 
-        // Variables de datos (vacías al inicio)
+        // Variables de datos
         let inventario = [];
         let lecturasAnualesDB = [];
-        let usuariosSesionesDB = [];
-        let cuentosVsDB = [];
-        let cuentosJuvVsDB = [];
-        let articulosVsDB = [];
-        let usuariosTotalesVsDB = [];
+        let lecturasMensualesDB = []; 
+        let metricasGlobales = [];
+        let topContenidosDB = [];
+
+        let chartProporcionInst = null, chartAnualesInst = null, chartLecturasMensualesInst = null;
+        let editandoId = null, editandoAño = null, editandoIdLM = null, editandoIdTop = null;
 
         const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-
-        let chartProporcionInst = null, chartAnualesInst = null, chartUsuariosSesionesInst = null;
-        let chartCuentosVsInst = null, chartCuentosJuvVsInst = null, chartArticulosVsInst = null, chartUsuariosTotalesVsInst = null;
-
-        let editandoId = null, editandoAño = null, editandoAñoUS = null;
-        let editandoIdCuentos = null, editandoIdCuentosJuv = null, editandoIdArticulos = null, editandoIdUsMensual = null; 
 
         // Carga inicial
         window.onload = async function() {
@@ -622,11 +480,9 @@
 
                 if(data.Inventario) inventario = data.Inventario;
                 if(data.Lecturas_Anuales) lecturasAnualesDB = data.Lecturas_Anuales;
-                if(data.Usuarios_Sesiones) usuariosSesionesDB = data.Usuarios_Sesiones;
-                if(data.Cuentos_Infantiles) cuentosVsDB = data.Cuentos_Infantiles;
-                if(data.Cuentos_Juveniles) cuentosJuvVsDB = data.Cuentos_Juveniles;
-                if(data.Articulos) articulosVsDB = data.Articulos;
-                if(data.Usuarios_Totales) usuariosTotalesVsDB = data.Usuarios_Totales;
+                if(data.Lecturas_Mensuales) lecturasMensualesDB = data.Lecturas_Mensuales;
+                if(data.Metricas_Globales) metricasGlobales = data.Metricas_Globales;
+                if(data.Top_Contenidos) topContenidosDB = data.Top_Contenidos;
 
                 hideLoader(loader);
                 switchTab('dashboard');
@@ -635,7 +491,7 @@
                 cargarSemillas();
                 hideLoader(loader);
                 switchTab('dashboard');
-                showToast("Error de conexión. Modo Offline activado.", "error");
+                showToast("Error de conexión. Modo Offline activo.", "error");
             }
         };
 
@@ -646,51 +502,44 @@
 
         function cargarSemillas() {
             inventario = [
-                { id: 1, titulo: '¡Colorín Colorado! Esta Contaminación Puede Hacerse A Un Lado (Por: María Paula Díaz Villarreal)', tipo: 'Articulo' },
+                { id: 1, titulo: '¡Colorín Colorado! Esta Contaminación Puede Hacerse A Un Lado', tipo: 'Articulo' },
                 { id: 2, titulo: 'No Es Culpa De La Vaca', tipo: 'Cuento' },
                 { id: 3, titulo: 'Combustible A Partir De Llantas Usadas', tipo: 'Articulo' }
             ];
             lecturasAnualesDB = [
-                { año: 2020, lecturas: 6624 }, { año: 2021, lecturas: 7190 }, { año: 2022, lecturas: 7707 },
-                { año: 2023, lecturas: 23500 }, { año: 2024, lecturas: 33464 }, { año: 2025, lecturas: 21676 }
+                { año: 2024, lecturas: 33464 }, { año: 2025, lecturas: 21676 }
             ];
-            usuariosSesionesDB = [
-                { año: 2024, usuarios: 13978, sesiones: 24566 }, { año: 2025, usuarios: 18500, sesiones: 31000 }
+            lecturasMensualesDB = [
+                { id: 1, año: 2026, mes: 4, articulos: 4500, cuentos: 1797 }
             ];
-            cuentosVsDB = [
-                { id: 1, año: 2025, mes: 0, vistas: 1200, sesiones: 950 }, { id: 2, año: 2025, mes: 1, vistas: 1450, sesiones: 1100 },
-                { id: 3, año: 2026, mes: 0, vistas: 1800, sesiones: 1500 }, { id: 4, año: 2026, mes: 1, vistas: 1950, sesiones: 1650 }
+            metricasGlobales = [
+                { vistas_totales: 145230, articulos_bajos: 12, cuentos_bajos: 5 }
             ];
-            cuentosJuvVsDB = [
-                { id: 1, año: 2025, mes: 0, vistas: 800, sesiones: 650 }, { id: 2, año: 2025, mes: 1, vistas: 900, sesiones: 700 },
-                { id: 3, año: 2026, mes: 0, vistas: 1100, sesiones: 950 }, { id: 4, año: 2026, mes: 1, vistas: 1250, sesiones: 1050 }
-            ];
-            articulosVsDB = [
-                { id: 1, año: 2025, mes: 0, vistas: 3200, sesiones: 2800 }, { id: 2, año: 2025, mes: 1, vistas: 3450, sesiones: 3100 },
-                { id: 3, año: 2026, mes: 0, vistas: 4100, sesiones: 3700 }, { id: 4, año: 2026, mes: 1, vistas: 4350, sesiones: 3950 }
-            ];
-            usuariosTotalesVsDB = [
-                { id: 1, año: 2025, mes: 0, usuarios: 5200 }, { id: 2, año: 2025, mes: 1, usuarios: 5450 },
-                { id: 3, año: 2026, mes: 0, usuarios: 6100 }, { id: 4, año: 2026, mes: 1, usuarios: 6350 }
+            topContenidosDB = [
+                { id: 1, titulo: 'Las creativas formas de usar el tallo de plátano en artesanías', lecturas: 4847 },
+                { id: 2, titulo: 'Una luz de esperanza para el planeta: Energías renovables', lecturas: 4219 }
             ];
         }
 
-        // Función de Sincronización
+        // --- SISTEMA INTELIGENTE DE SINCRONIZACIÓN ---
         async function syncToCloud(sheetName, dataArray) {
-            if (!URL_GOOGLE_SHEETS) {
-                showToast("Guardado localmente. URL de Google Sheets no configurada.", "error");
-                return; 
-            }
+            if (!URL_GOOGLE_SHEETS) return; 
             try {
-                await fetch(URL_GOOGLE_SHEETS, {
+                let req = await fetch(URL_GOOGLE_SHEETS, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({ sheet: sheetName, data: dataArray })
                 });
-                showToast("Información guardada correctamente en Google Sheets", "success");
+                
+                let res = await req.json();
+                
+                if (res.status === "error") {
+                    showToast(`Error de la Nube: ${res.message} en la pestaña ${sheetName}`, "error");
+                } else {
+                    showToast(`Información guardada en ${sheetName}`, "success");
+                }
             } catch (error) {
-                console.error("Error al sincronizar:", error);
-                showToast("Hubo un error al intentar subir la información.", "error");
+                showToast("Error crítico al comunicarse con Google Sheets.", "error");
             }
         }
 
@@ -707,39 +556,156 @@
             
             if(tabId === 'dashboard') actualizarDashboard();
             if(tabId === 'registro') {
-                renderTabla(); renderTablaAnuales(); renderTablaUS(); renderTablaCuentosVs(); renderTablaCuentosJuvVs(); renderTablaArticulosVs(); renderTablaUsuariosTotalesVs();
+                renderTabla(); 
+                renderTablaAnuales(); 
+                renderTablaLecturasMensuales();
+                renderTablaTopRegistro();
+                
+                if (metricasGlobales && metricasGlobales.length > 0) {
+                    document.getElementById('input-vistas-global').value = metricasGlobales[0].vistas_totales || 0;
+                    document.getElementById('input-articulos-bajos').value = metricasGlobales[0].articulos_bajos || 0;
+                    document.getElementById('input-cuentos-bajos').value = metricasGlobales[0].cuentos_bajos || 0;
+                }
             }
         }
 
         // --- LÓGICAS DE REGISTRO ---
         
+        // 0. MÉTRICAS GLOBALES (VISTAS)
+        document.getElementById('formMetricasGlobales').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const vistas = parseInt(document.getElementById('input-vistas-global').value) || 0;
+            const btn = document.getElementById('btn-guardar-globales');
+            
+            btn.innerText = "Guardando..."; btn.disabled = true;
+            
+            let artBajos = metricasGlobales.length > 0 ? metricasGlobales[0].articulos_bajos : 0;
+            let cuentosBajos = metricasGlobales.length > 0 ? metricasGlobales[0].cuentos_bajos : 0;
+            
+            metricasGlobales = [{ vistas_totales: vistas, articulos_bajos: artBajos, cuentos_bajos: cuentosBajos }];
+            await syncToCloud('Metricas_Globales', metricasGlobales);
+            
+            document.getElementById('kpi-vistas-totales').innerText = vistas.toLocaleString('es-CO');
+            
+            btn.innerText = "Actualizar Vistas"; btn.disabled = false;
+        });
+
+        // NUEVO: MÉTRICAS GLOBALES (BAJAS LECTURAS)
+        document.getElementById('formBajasLecturas').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const artBajos = parseInt(document.getElementById('input-articulos-bajos').value) || 0;
+            const cuentosBajos = parseInt(document.getElementById('input-cuentos-bajos').value) || 0;
+            const btn = document.getElementById('btn-guardar-bajos');
+            
+            btn.innerText = "Guardando..."; btn.disabled = true;
+            
+            let vistas = metricasGlobales.length > 0 ? metricasGlobales[0].vistas_totales : 0;
+            
+            metricasGlobales = [{ vistas_totales: vistas, articulos_bajos: artBajos, cuentos_bajos: cuentosBajos }];
+            await syncToCloud('Metricas_Globales', metricasGlobales);
+            
+            document.getElementById('kpi-articulos-bajos').innerText = artBajos.toLocaleString('es-CO');
+            document.getElementById('kpi-cuentos-bajos').innerText = cuentosBajos.toLocaleString('es-CO');
+            
+            btn.innerText = "Guardar Alertas"; btn.disabled = false;
+        });
+
+        // TOP CONTENIDOS MANUAL
+        document.getElementById('formTopContenidos').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const inputTitulo = document.getElementById('input-titulo-top').value;
+            const inputLecturas = parseInt(document.getElementById('input-lecturas-top').value);
+            const btn = document.getElementById('btn-guardar-top');
+            
+            btn.innerText = "Guardando..."; btn.disabled = true;
+            
+            if (editandoIdTop !== null) {
+                const index = topContenidosDB.findIndex(i => parseInt(i.id) === parseInt(editandoIdTop));
+                if (index > -1) { 
+                    topContenidosDB[index].titulo = inputTitulo; 
+                    topContenidosDB[index].lecturas = inputLecturas; 
+                }
+                editandoIdTop = null; 
+            } else { 
+                topContenidosDB.push({ id: Date.now(), titulo: inputTitulo, lecturas: inputLecturas }); 
+            }
+            
+            await syncToCloud('Top_Contenidos', topContenidosDB);
+            this.reset(); renderTablaTopRegistro();
+            btn.innerText = "Guardar en el Top"; btn.disabled = false;
+        });
+
+        function editarTopContenido(id) {
+            const item = topContenidosDB.find(i => parseInt(i.id) === parseInt(id));
+            if(item) {
+                document.getElementById('input-titulo-top').value = item.titulo; 
+                document.getElementById('input-lecturas-top').value = item.lecturas;
+                editandoIdTop = id; document.getElementById('btn-guardar-top').innerText = "Actualizar en el Top";
+            }
+        }
+
+        async function eliminarTopContenido(id) {
+            if(await customConfirm("¿Estás seguro de que deseas eliminar este contenido del Top?")) {
+                topContenidosDB = topContenidosDB.filter(i => parseInt(i.id) !== parseInt(id));
+                await syncToCloud('Top_Contenidos', topContenidosDB); renderTablaTopRegistro();
+            }
+        }
+
+        function renderTablaTopRegistro() {
+            const tbody = document.getElementById('tabla-registro-top'); tbody.innerHTML = '';
+            const ordenados = [...topContenidosDB].sort((a, b) => parseInt(b.lecturas) - parseInt(a.lecturas));
+            ordenados.forEach(item => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 text-slate-700 font-medium truncate max-w-[200px]" title="${item.titulo}">${item.titulo}</td>
+                        <td class="p-3 text-right text-slate-600 font-black">${parseInt(item.lecturas).toLocaleString('es-CO')}</td>
+                        <td class="p-3 flex justify-center gap-2">
+                            <button type="button" onclick="editarTopContenido(${item.id})" class="text-blue-600 hover:text-blue-800 text-xs font-bold underline">Editar</button>
+                            <button type="button" onclick="eliminarTopContenido(${item.id})" class="text-red-600 hover:text-red-800 text-xs font-bold underline">Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+
         // 1. INVENTARIO
         document.getElementById('formContenido').addEventListener('submit', async function(e) {
             e.preventDefault();
             const inputId = parseInt(document.getElementById('input-id').value);
             const inputTitulo = document.getElementById('input-titulo').value;
             const inputTipo = document.getElementById('input-tipo').value;
+            const btn = document.getElementById('btn-guardar-form');
+            
+            btn.innerText = "Guardando..."; btn.disabled = true;
             
             if (editandoId !== null) {
                 const index = inventario.findIndex(i => parseInt(i.id) === parseInt(editandoId));
-                if (index > -1) { inventario[index].id = inputId; inventario[index].titulo = inputTitulo; inventario[index].tipo = inputTipo; }
-                editandoId = null; document.getElementById('btn-guardar-form').innerText = "Guardar Contenido";
+                if (index > -1) { 
+                    inventario[index].id = inputId; 
+                    inventario[index].titulo = inputTitulo; 
+                    inventario[index].tipo = inputTipo; 
+                }
+                editandoId = null; 
             } else { inventario.push({ id: inputId, titulo: inputTitulo, tipo: inputTipo }); }
             
             await syncToCloud('Inventario', inventario);
             this.reset(); renderTabla();
+            btn.innerText = "Guardar Contenido"; btn.disabled = false;
         });
 
         function editarContenido(id) {
             const item = inventario.find(i => parseInt(i.id) === parseInt(id));
             if(item) {
-                document.getElementById('input-id').value = item.id; document.getElementById('input-titulo').value = item.titulo; document.getElementById('input-tipo').value = item.tipo;
+                document.getElementById('input-id').value = item.id; 
+                document.getElementById('input-titulo').value = item.titulo; 
+                document.getElementById('input-tipo').value = item.tipo;
                 editandoId = id; document.getElementById('btn-guardar-form').innerText = "Actualizar Contenido";
             }
         }
 
         async function eliminarContenido(id) {
-            if(await customConfirm("¿Estás seguro de que deseas eliminar este contenido? Esta acción no se puede deshacer.")) {
+            if(await customConfirm("¿Estás seguro de que deseas eliminar este contenido del inventario?")) {
                 inventario = inventario.filter(i => parseInt(i.id) !== parseInt(id));
                 await syncToCloud('Inventario', inventario); renderTabla();
             }
@@ -769,17 +735,25 @@
             e.preventDefault();
             const inputAño = parseInt(document.getElementById('input-año').value);
             const inputLecturas = parseInt(document.getElementById('input-lecturas-anuales').value);
+            const btn = document.getElementById('btn-guardar-anuales');
+            
+            btn.innerText = "Guardando..."; btn.disabled = true;
             
             if (editandoAño !== null) {
                 const index = lecturasAnualesDB.findIndex(i => parseInt(i.año) === parseInt(editandoAño));
                 if (index > -1) { lecturasAnualesDB[index].año = inputAño; lecturasAnualesDB[index].lecturas = inputLecturas; }
-                editandoAño = null; document.getElementById('btn-guardar-anuales').innerText = "Guardar Lecturas";
+                editandoAño = null; 
             } else {
-                if(lecturasAnualesDB.find(i => parseInt(i.año) === inputAño)) { showToast("Ese año ya está registrado.", "error"); return; }
+                if(lecturasAnualesDB.find(i => parseInt(i.año) === inputAño)) { showToast("Ese año ya está registrado.", "error"); btn.innerText = "Guardar Lecturas"; btn.disabled = false; return; }
                 lecturasAnualesDB.push({ año: inputAño, lecturas: inputLecturas });
             }
             await syncToCloud('Lecturas_Anuales', lecturasAnualesDB); 
+            
+            const totalLec = lecturasAnualesDB.reduce((sum, item) => sum + (parseInt(item.lecturas) || 0), 0);
+            document.getElementById('kpi-lecturas-totales').innerText = totalLec.toLocaleString('es-CO');
+
             this.reset(); renderTablaAnuales();
+            btn.innerText = "Guardar Lecturas"; btn.disabled = false;
         });
 
         function editarLecturasAnuales(año) {
@@ -793,7 +767,12 @@
         async function eliminarLecturasAnuales(año) {
             if(await customConfirm("¿Estás seguro de que deseas eliminar las lecturas de este año?")) {
                 lecturasAnualesDB = lecturasAnualesDB.filter(i => parseInt(i.año) !== parseInt(año)); 
-                await syncToCloud('Lecturas_Anuales', lecturasAnualesDB); renderTablaAnuales();
+                await syncToCloud('Lecturas_Anuales', lecturasAnualesDB); 
+                
+                const totalLec = lecturasAnualesDB.reduce((sum, item) => sum + (parseInt(item.lecturas) || 0), 0);
+                document.getElementById('kpi-lecturas-totales').innerText = totalLec.toLocaleString('es-CO');
+
+                renderTablaAnuales();
             }
         }
 
@@ -814,274 +793,70 @@
             });
         }
 
-        // 3. USUARIOS Y SESIONES ANUAL
-        document.getElementById('formUsuariosSesiones').addEventListener('submit', async function(e) {
+        // 3. LECTURAS MENSUALES
+        document.getElementById('formLecturasMensuales').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const inputAño = parseInt(document.getElementById('input-año-us').value);
-            const inputUsuarios = parseInt(document.getElementById('input-usuarios').value);
-            const inputSesiones = parseInt(document.getElementById('input-sesiones').value);
+            const inputAño = parseInt(document.getElementById('input-año-lm').value);
+            const inputMes = parseInt(document.getElementById('input-mes-lm').value);
+            const inputArticulos = parseInt(document.getElementById('input-articulos-lm').value);
+            const inputCuentos = parseInt(document.getElementById('input-cuentos-lm').value);
+            const btn = document.getElementById('btn-guardar-lm');
             
-            if (editandoAñoUS !== null) {
-                const index = usuariosSesionesDB.findIndex(i => parseInt(i.año) === parseInt(editandoAñoUS));
-                if (index > -1) { usuariosSesionesDB[index].año = inputAño; usuariosSesionesDB[index].usuarios = inputUsuarios; usuariosSesionesDB[index].sesiones = inputSesiones; }
-                editandoAñoUS = null; document.getElementById('btn-guardar-us').innerText = "Guardar Datos";
-            } else {
-                if(usuariosSesionesDB.find(i => parseInt(i.año) === inputAño)) { showToast("Ese año ya está registrado.", "error"); return; }
-                usuariosSesionesDB.push({ año: inputAño, usuarios: inputUsuarios, sesiones: inputSesiones });
-            }
-            await syncToCloud('Usuarios_Sesiones', usuariosSesionesDB); this.reset(); renderTablaUS();
-        });
+            btn.innerText = "Guardando..."; btn.disabled = true;
 
-        function editarUsuariosSesiones(año) {
-            const item = usuariosSesionesDB.find(i => parseInt(i.año) === parseInt(año));
-            if(item) {
-                document.getElementById('input-año-us').value = item.año; document.getElementById('input-usuarios').value = item.usuarios; document.getElementById('input-sesiones').value = item.sesiones;
-                editandoAñoUS = año; document.getElementById('btn-guardar-us').innerText = "Actualizar Datos";
-            }
-        }
-
-        async function eliminarUsuariosSesiones(año) {
-            if(await customConfirm("¿Estás seguro de que deseas eliminar los datos de usuarios y sesiones de este año?")) {
-                usuariosSesionesDB = usuariosSesionesDB.filter(i => parseInt(i.año) !== parseInt(año)); 
-                await syncToCloud('Usuarios_Sesiones', usuariosSesionesDB); renderTablaUS();
-            }
-        }
-
-        function renderTablaUS() {
-            const tbody = document.getElementById('tabla-usuarios-sesiones'); tbody.innerHTML = '';
-            const ordenados = [...usuariosSesionesDB].sort((a, b) => parseInt(a.año) - parseInt(b.año));
-            ordenados.forEach(item => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 text-slate-700 font-medium">${item.año}</td>
-                        <td class="p-3">${parseInt(item.usuarios).toLocaleString('es-CO')}</td>
-                        <td class="p-3">${parseInt(item.sesiones).toLocaleString('es-CO')}</td>
-                        <td class="p-3 flex justify-center gap-2">
-                            <button type="button" onclick="editarUsuariosSesiones(${item.año})" class="text-blue-600 hover:text-blue-800 text-xs font-bold underline">Editar</button>
-                            <button type="button" onclick="eliminarUsuariosSesiones(${item.año})" class="text-red-600 hover:text-red-800 text-xs font-bold underline">Eliminar</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        // 4. CUENTOS INFANTILES DINÁMICO
-        document.getElementById('formCuentosVs').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const inputAño = parseInt(document.getElementById('input-año-cuentos').value); const inputMes = parseInt(document.getElementById('input-mes-cuentos').value);
-            const inputVistas = parseInt(document.getElementById('input-vistas-cuentos').value); const inputSesiones = parseInt(document.getElementById('input-sesiones-cuentos').value);
-
-            if (editandoIdCuentos !== null) {
-                const index = cuentosVsDB.findIndex(i => parseInt(i.id) === parseInt(editandoIdCuentos));
+            if (editandoIdLM !== null) {
+                const index = lecturasMensualesDB.findIndex(i => parseInt(i.id) === parseInt(editandoIdLM));
                 if (index > -1) {
-                    if(cuentosVsDB.find(i => parseInt(i.año) === inputAño && parseInt(i.mes) === inputMes && parseInt(i.id) !== parseInt(editandoIdCuentos))) { showToast("Ya hay un registro para este Año y Mes.", "error"); return; }
-                    cuentosVsDB[index].año = inputAño; cuentosVsDB[index].mes = inputMes; cuentosVsDB[index].vistas = inputVistas; cuentosVsDB[index].sesiones = inputSesiones;
+                    if(lecturasMensualesDB.find(i => parseInt(i.año) === inputAño && parseInt(i.mes) === inputMes && parseInt(i.id) !== parseInt(editandoIdLM))) { showToast("Ya hay un registro para este Año y Mes.", "error"); btn.innerText = "Guardar Mes"; btn.disabled = false; return; }
+                    lecturasMensualesDB[index].año = inputAño; lecturasMensualesDB[index].mes = inputMes; 
+                    lecturasMensualesDB[index].articulos = inputArticulos; lecturasMensualesDB[index].cuentos = inputCuentos;
                 }
-                editandoIdCuentos = null; document.getElementById('btn-guardar-cuentos').innerText = "Guardar Datos";
+                editandoIdLM = null; 
             } else {
-                if(cuentosVsDB.find(i => parseInt(i.año) === inputAño && parseInt(i.mes) === inputMes)) { showToast("Ya hay un registro para este Año y Mes.", "error"); return; }
-                cuentosVsDB.push({ id: Date.now(), año: inputAño, mes: inputMes, vistas: inputVistas, sesiones: inputSesiones });
+                if(lecturasMensualesDB.find(i => parseInt(i.año) === inputAño && parseInt(i.mes) === inputMes)) { showToast("Ya hay un registro para este Año y Mes.", "error"); btn.innerText = "Guardar Mes"; btn.disabled = false; return; }
+                lecturasMensualesDB.push({ id: Date.now(), año: inputAño, mes: inputMes, articulos: inputArticulos, cuentos: inputCuentos });
             }
-            await syncToCloud('Cuentos_Infantiles', cuentosVsDB); this.reset(); renderTablaCuentosVs();
+            await syncToCloud('Lecturas_Mensuales', lecturasMensualesDB); 
+            this.reset(); renderTablaLecturasMensuales();
+            btn.innerText = "Guardar Mes"; btn.disabled = false;
         });
 
-        function editarCuentosVs(id) {
-            const item = cuentosVsDB.find(i => parseInt(i.id) === parseInt(id));
+        function editarLecturasMensuales(id) {
+            const item = lecturasMensualesDB.find(i => parseInt(i.id) === parseInt(id));
             if(item) {
-                document.getElementById('input-año-cuentos').value = item.año; document.getElementById('input-mes-cuentos').value = item.mes;
-                document.getElementById('input-vistas-cuentos').value = item.vistas; document.getElementById('input-sesiones-cuentos').value = item.sesiones;
-                editandoIdCuentos = id; document.getElementById('btn-guardar-cuentos').innerText = "Actualizar Datos";
+                document.getElementById('input-año-lm').value = item.año; document.getElementById('input-mes-lm').value = item.mes;
+                document.getElementById('input-articulos-lm').value = item.articulos; document.getElementById('input-cuentos-lm').value = item.cuentos;
+                editandoIdLM = id; document.getElementById('btn-guardar-lm').innerText = "Actualizar Mes";
             }
         }
 
-        async function eliminarCuentosVs(id) {
-            if(await customConfirm("¿Estás seguro de que deseas eliminar este registro de cuentos infantiles?")) { 
-                cuentosVsDB = cuentosVsDB.filter(i => parseInt(i.id) !== parseInt(id)); 
-                await syncToCloud('Cuentos_Infantiles', cuentosVsDB); renderTablaCuentosVs(); 
+        async function eliminarLecturasMensuales(id) {
+            if(await customConfirm("¿Estás seguro de que deseas eliminar este mes?")) {
+                lecturasMensualesDB = lecturasMensualesDB.filter(i => parseInt(i.id) !== parseInt(id)); 
+                await syncToCloud('Lecturas_Mensuales', lecturasMensualesDB); renderTablaLecturasMensuales();
             }
         }
 
-        function renderTablaCuentosVs() {
-            const tbody = document.getElementById('tabla-cuentos-vs'); tbody.innerHTML = '';
-            const ordenados = [...cuentosVsDB].sort((a, b) => { if (parseInt(a.año) !== parseInt(b.año)) return parseInt(b.año) - parseInt(a.año); return parseInt(a.mes) - parseInt(b.mes); });
-            ordenados.forEach(item => {
-                const colorAño = item.año % 2 === 0 ? 'text-blue-600' : 'text-emerald-600';
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 font-bold ${colorAño}">${item.año}</td>
-                        <td class="p-3 text-slate-700">${nombresMeses[item.mes]}</td>
-                        <td class="p-3">${parseInt(item.vistas).toLocaleString('es-CO')}</td>
-                        <td class="p-3">${parseInt(item.sesiones).toLocaleString('es-CO')}</td>
-                        <td class="p-3 flex justify-center gap-2">
-                            <button type="button" onclick="editarCuentosVs(${item.id})" class="text-blue-600 hover:text-blue-800 text-xs font-bold underline">Editar</button>
-                            <button type="button" onclick="eliminarCuentosVs(${item.id})" class="text-red-600 hover:text-red-800 text-xs font-bold underline">Eliminar</button>
-                        </td>
-                    </tr>
-                `;
+        function renderTablaLecturasMensuales() {
+            const tbody = document.getElementById('tabla-lecturas-mensuales'); tbody.innerHTML = '';
+            
+            const ordenados = [...lecturasMensualesDB].sort((a, b) => {
+                if (parseInt(a.año) !== parseInt(b.año)) return parseInt(b.año) - parseInt(a.año);
+                return parseInt(b.mes) - parseInt(a.mes);
             });
-        }
 
-        // 5. CUENTOS JUVENILES DINÁMICO
-        document.getElementById('formCuentosJuvVs').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const inputAño = parseInt(document.getElementById('input-año-cuentos-juv').value); const inputMes = parseInt(document.getElementById('input-mes-cuentos-juv').value);
-            const inputVistas = parseInt(document.getElementById('input-vistas-cuentos-juv').value); const inputSesiones = parseInt(document.getElementById('input-sesiones-cuentos-juv').value);
-
-            if (editandoIdCuentosJuv !== null) {
-                const index = cuentosJuvVsDB.findIndex(i => parseInt(i.id) === parseInt(editandoIdCuentosJuv));
-                if (index > -1) {
-                    if(cuentosJuvVsDB.find(i => parseInt(i.año) === inputAño && parseInt(i.mes) === inputMes && parseInt(i.id) !== parseInt(editandoIdCuentosJuv))) { showToast("Ya hay un registro para este Año y Mes.", "error"); return; }
-                    cuentosJuvVsDB[index].año = inputAño; cuentosJuvVsDB[index].mes = inputMes; cuentosJuvVsDB[index].vistas = inputVistas; cuentosJuvVsDB[index].sesiones = inputSesiones;
-                }
-                editandoIdCuentosJuv = null; document.getElementById('btn-guardar-cuentos-juv').innerText = "Guardar Datos";
-            } else {
-                if(cuentosJuvVsDB.find(i => parseInt(i.año) === inputAño && parseInt(i.mes) === inputMes)) { showToast("Ya hay un registro para este Año y Mes.", "error"); return; }
-                cuentosJuvVsDB.push({ id: Date.now(), año: inputAño, mes: inputMes, vistas: inputVistas, sesiones: inputSesiones });
-            }
-            await syncToCloud('Cuentos_Juveniles', cuentosJuvVsDB); this.reset(); renderTablaCuentosJuvVs();
-        });
-
-        function editarCuentosJuvVs(id) {
-            const item = cuentosJuvVsDB.find(i => parseInt(i.id) === parseInt(id));
-            if(item) {
-                document.getElementById('input-año-cuentos-juv').value = item.año; document.getElementById('input-mes-cuentos-juv').value = item.mes;
-                document.getElementById('input-vistas-cuentos-juv').value = item.vistas; document.getElementById('input-sesiones-cuentos-juv').value = item.sesiones;
-                editandoIdCuentosJuv = id; document.getElementById('btn-guardar-cuentos-juv').innerText = "Actualizar Datos";
-            }
-        }
-
-        async function eliminarCuentosJuvVs(id) {
-            if(await customConfirm("¿Estás seguro de que deseas eliminar este registro de cuentos juveniles?")) { 
-                cuentosJuvVsDB = cuentosJuvVsDB.filter(i => parseInt(i.id) !== parseInt(id)); 
-                await syncToCloud('Cuentos_Juveniles', cuentosJuvVsDB); renderTablaCuentosJuvVs(); 
-            }
-        }
-
-        function renderTablaCuentosJuvVs() {
-            const tbody = document.getElementById('tabla-cuentos-juv-vs'); tbody.innerHTML = '';
-            const ordenados = [...cuentosJuvVsDB].sort((a, b) => { if (parseInt(a.año) !== parseInt(b.año)) return parseInt(b.año) - parseInt(a.año); return parseInt(a.mes) - parseInt(b.mes); });
             ordenados.forEach(item => {
-                const colorAño = item.año % 2 === 0 ? 'text-blue-600' : 'text-emerald-600';
+                const total = parseInt(item.articulos) + parseInt(item.cuentos);
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 font-bold ${colorAño}">${item.año}</td>
-                        <td class="p-3 text-slate-700">${nombresMeses[item.mes]}</td>
-                        <td class="p-3">${parseInt(item.vistas).toLocaleString('es-CO')}</td>
-                        <td class="p-3">${parseInt(item.sesiones).toLocaleString('es-CO')}</td>
+                        <td class="p-3 font-bold text-slate-700">${item.año}</td>
+                        <td class="p-3">${nombresMeses[item.mes]}</td>
+                        <td class="p-3 text-slate-600">${parseInt(item.articulos).toLocaleString('es-CO')}</td>
+                        <td class="p-3 text-slate-600">${parseInt(item.cuentos).toLocaleString('es-CO')}</td>
+                        <td class="p-3 font-bold text-green-700">${total.toLocaleString('es-CO')}</td>
                         <td class="p-3 flex justify-center gap-2">
-                            <button type="button" onclick="editarCuentosJuvVs(${item.id})" class="text-blue-600 hover:text-blue-800 text-xs font-bold underline">Editar</button>
-                            <button type="button" onclick="eliminarCuentosJuvVs(${item.id})" class="text-red-600 hover:text-red-800 text-xs font-bold underline">Eliminar</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        // 6. ARTÍCULOS DINÁMICO
-        document.getElementById('formArticulosVs').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const inputAño = parseInt(document.getElementById('input-año-articulos').value); const inputMes = parseInt(document.getElementById('input-mes-articulos').value);
-            const inputVistas = parseInt(document.getElementById('input-vistas-articulos').value); const inputSesiones = parseInt(document.getElementById('input-sesiones-articulos').value);
-
-            if (editandoIdArticulos !== null) {
-                const index = articulosVsDB.findIndex(i => parseInt(i.id) === parseInt(editandoIdArticulos));
-                if (index > -1) {
-                    if(articulosVsDB.find(i => parseInt(i.año) === inputAño && parseInt(i.mes) === inputMes && parseInt(i.id) !== parseInt(editandoIdArticulos))) { showToast("Ya hay un registro para este Año y Mes.", "error"); return; }
-                    articulosVsDB[index].año = inputAño; articulosVsDB[index].mes = inputMes; articulosVsDB[index].vistas = inputVistas; articulosVsDB[index].sesiones = inputSesiones;
-                }
-                editandoIdArticulos = null; document.getElementById('btn-guardar-articulos').innerText = "Guardar Datos";
-            } else {
-                if(articulosVsDB.find(i => parseInt(i.año) === inputAño && parseInt(i.mes) === inputMes)) { showToast("Ya hay un registro para este Año y Mes.", "error"); return; }
-                articulosVsDB.push({ id: Date.now(), año: inputAño, mes: inputMes, vistas: inputVistas, sesiones: inputSesiones });
-            }
-            await syncToCloud('Articulos', articulosVsDB); this.reset(); renderTablaArticulosVs();
-        });
-
-        function editarArticulosVs(id) {
-            const item = articulosVsDB.find(i => parseInt(i.id) === parseInt(id));
-            if(item) {
-                document.getElementById('input-año-articulos').value = item.año; document.getElementById('input-mes-articulos').value = item.mes;
-                document.getElementById('input-vistas-articulos').value = item.vistas; document.getElementById('input-sesiones-articulos').value = item.sesiones;
-                editandoIdArticulos = id; document.getElementById('btn-guardar-articulos').innerText = "Actualizar Datos";
-            }
-        }
-
-        async function eliminarArticulosVs(id) {
-            if(await customConfirm("¿Estás seguro de que deseas eliminar este registro de artículos?")) { 
-                articulosVsDB = articulosVsDB.filter(i => parseInt(i.id) !== parseInt(id)); 
-                await syncToCloud('Articulos', articulosVsDB); renderTablaArticulosVs(); 
-            }
-        }
-
-        function renderTablaArticulosVs() {
-            const tbody = document.getElementById('tabla-articulos-vs'); tbody.innerHTML = '';
-            const ordenados = [...articulosVsDB].sort((a, b) => { if (parseInt(a.año) !== parseInt(b.año)) return parseInt(b.año) - parseInt(a.año); return parseInt(a.mes) - parseInt(b.mes); });
-            ordenados.forEach(item => {
-                const colorAño = item.año % 2 === 0 ? 'text-blue-600' : 'text-emerald-600';
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 font-bold ${colorAño}">${item.año}</td>
-                        <td class="p-3 text-slate-700">${nombresMeses[item.mes]}</td>
-                        <td class="p-3">${parseInt(item.vistas).toLocaleString('es-CO')}</td>
-                        <td class="p-3">${parseInt(item.sesiones).toLocaleString('es-CO')}</td>
-                        <td class="p-3 flex justify-center gap-2">
-                            <button type="button" onclick="editarArticulosVs(${item.id})" class="text-blue-600 hover:text-blue-800 text-xs font-bold underline">Editar</button>
-                            <button type="button" onclick="eliminarArticulosVs(${item.id})" class="text-red-600 hover:text-red-800 text-xs font-bold underline">Eliminar</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        // 7. USUARIOS TOTALES MENSUAL (SIN SESIONES)
-        document.getElementById('formUsuariosTotalesVs').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const inputAño = parseInt(document.getElementById('input-año-us-mensual').value); const inputMes = parseInt(document.getElementById('input-mes-us-mensual').value);
-            const inputUsuarios = parseInt(document.getElementById('input-usuarios-mensual').value);
-
-            if (editandoIdUsMensual !== null) {
-                const index = usuariosTotalesVsDB.findIndex(i => parseInt(i.id) === parseInt(editandoIdUsMensual));
-                if (index > -1) {
-                    if(usuariosTotalesVsDB.find(i => parseInt(i.año) === inputAño && parseInt(i.mes) === inputMes && parseInt(i.id) !== parseInt(editandoIdUsMensual))) { showToast("Ya hay un registro para este Año y Mes.", "error"); return; }
-                    usuariosTotalesVsDB[index].año = inputAño; usuariosTotalesVsDB[index].mes = inputMes; usuariosTotalesVsDB[index].usuarios = inputUsuarios;
-                }
-                editandoIdUsMensual = null; document.getElementById('btn-guardar-us-mensual').innerText = "Guardar Datos";
-            } else {
-                if(usuariosTotalesVsDB.find(i => parseInt(i.año) === inputAño && parseInt(i.mes) === inputMes)) { showToast("Ya hay un registro para este Año y Mes.", "error"); return; }
-                usuariosTotalesVsDB.push({ id: Date.now(), año: inputAño, mes: inputMes, usuarios: inputUsuarios });
-            }
-            await syncToCloud('Usuarios_Totales', usuariosTotalesVsDB); this.reset(); renderTablaUsuariosTotalesVs();
-        });
-
-        function editarUsuariosTotalesVs(id) {
-            const item = usuariosTotalesVsDB.find(i => parseInt(i.id) === parseInt(id));
-            if(item) {
-                document.getElementById('input-año-us-mensual').value = item.año; document.getElementById('input-mes-us-mensual').value = item.mes;
-                document.getElementById('input-usuarios-mensual').value = item.usuarios;
-                editandoIdUsMensual = id; document.getElementById('btn-guardar-us-mensual').innerText = "Actualizar Datos";
-            }
-        }
-
-        async function eliminarUsuariosTotalesVs(id) {
-            if(await customConfirm("¿Estás seguro de que deseas eliminar este registro de usuarios mensuales?")) { 
-                usuariosTotalesVsDB = usuariosTotalesVsDB.filter(i => parseInt(i.id) !== parseInt(id)); 
-                await syncToCloud('Usuarios_Totales', usuariosTotalesVsDB); renderTablaUsuariosTotalesVs(); 
-            }
-        }
-
-        function renderTablaUsuariosTotalesVs() {
-            const tbody = document.getElementById('tabla-us-vs'); tbody.innerHTML = '';
-            const ordenados = [...usuariosTotalesVsDB].sort((a, b) => { if (parseInt(a.año) !== parseInt(b.año)) return parseInt(b.año) - parseInt(a.año); return parseInt(a.mes) - parseInt(b.mes); });
-            ordenados.forEach(item => {
-                const colorAño = item.año % 2 === 0 ? 'text-purple-600' : 'text-amber-600';
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 font-bold ${colorAño}">${item.año}</td>
-                        <td class="p-3 text-slate-700">${nombresMeses[item.mes]}</td>
-                        <td class="p-3">${parseInt(item.usuarios).toLocaleString('es-CO')}</td>
-                        <td class="p-3 flex justify-center gap-2">
-                            <button type="button" onclick="editarUsuariosTotalesVs(${item.id})" class="text-purple-600 hover:text-purple-800 text-xs font-bold underline">Editar</button>
-                            <button type="button" onclick="eliminarUsuariosTotalesVs(${item.id})" class="text-red-600 hover:text-red-800 text-xs font-bold underline">Eliminar</button>
+                            <button type="button" onclick="editarLecturasMensuales(${item.id})" class="text-blue-600 hover:text-blue-800 text-xs font-bold underline">Editar</button>
+                            <button type="button" onclick="eliminarLecturasMensuales(${item.id})" class="text-red-600 hover:text-red-800 text-xs font-bold underline">Eliminar</button>
                         </td>
                     </tr>
                 `;
@@ -1090,15 +865,27 @@
 
         // --- 8. LÓGICA DEL DASHBOARD ---
         function actualizarDashboard() {
+            
+            if (metricasGlobales && metricasGlobales.length > 0) {
+                document.getElementById('kpi-vistas-totales').innerText = (parseInt(metricasGlobales[0].vistas_totales) || 0).toLocaleString('es-CO');
+                document.getElementById('kpi-articulos-bajos').innerText = (parseInt(metricasGlobales[0].articulos_bajos) || 0).toLocaleString('es-CO');
+                document.getElementById('kpi-cuentos-bajos').innerText = (parseInt(metricasGlobales[0].cuentos_bajos) || 0).toLocaleString('es-CO');
+            }
+
+            const totalLecturasAnuales = lecturasAnualesDB.reduce((sum, item) => sum + (parseInt(item.lecturas) || 0), 0);
+            document.getElementById('kpi-lecturas-totales').innerText = totalLecturasAnuales.toLocaleString('es-CO');
+
             const totalArticulos = inventario.filter(i => i.tipo === 'Articulo').length;
             const totalCuentos = inventario.filter(i => i.tipo === 'Cuento').length;
             
             document.getElementById('kpi-articulos').innerText = totalArticulos;
             document.getElementById('kpi-cuentos').innerText = totalCuentos;
 
+            renderTopContenidos();
+
             if(chartProporcionInst) chartProporcionInst.destroy();
             if(chartAnualesInst) chartAnualesInst.destroy();
-            if(chartUsuariosSesionesInst) chartUsuariosSesionesInst.destroy();
+            if(chartLecturasMensualesInst) chartLecturasMensualesInst.destroy();
 
             chartProporcionInst = new Chart(document.getElementById('chartProporcion').getContext('2d'), {
                 type: 'doughnut',
@@ -1113,141 +900,101 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { display: false, grid: { display: false } } } }
             });
 
-            const ordenadosUS = [...usuariosSesionesDB].sort((a, b) => parseInt(a.año) - parseInt(b.año));
-            chartUsuariosSesionesInst = new Chart(document.getElementById('chartUsuariosSesiones').getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: ordenadosUS.map(i => i.año.toString()),
-                    datasets: [
-                        { label: 'Usuarios', data: ordenadosUS.map(i => parseInt(i.usuarios)), borderColor: '#8b5cf6', backgroundColor: 'rgba(139, 92, 246, 0.1)', fill: true, tension: 0.3 },
-                        { label: 'Sesiones', data: ordenadosUS.map(i => parseInt(i.sesiones)), borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.3 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#f1f5f9' } } } }
-            });
-
-            actualizarSelectores(cuentosVsDB, 'select-year-1', 'select-year-2');
-            actualizarSelectores(cuentosJuvVsDB, 'select-year-juv-1', 'select-year-juv-2');
-            actualizarSelectores(articulosVsDB, 'select-year-art-1', 'select-year-art-2');
-            actualizarSelectores(usuariosTotalesVsDB, 'select-year-us-mensual-1', 'select-year-us-mensual-2');
-
-            renderChartCuentos(); renderChartCuentosJuv(); renderChartArticulos(); renderChartUsuariosTotales();
+            renderChartLecturasMensuales();
         }
 
-        function actualizarSelectores(db, idSelect1, idSelect2) {
-            const añosUnicos = [...new Set(db.map(i => parseInt(i.año)))].sort((a, b) => b - a);
-            const s1 = document.getElementById(idSelect1); const s2 = document.getElementById(idSelect2);
-            s1.innerHTML = ''; s2.innerHTML = '';
+        // --- RENDERIZAR TABLA TOP EN DASHBOARD ---
+        function renderTopContenidos() {
+            const tbody = document.getElementById('tabla-top-contenidos');
+            tbody.innerHTML = '';
             
-            if(añosUnicos.length === 0) { const cy = new Date().getFullYear(); s1.add(new Option(cy, cy)); s2.add(new Option(cy, cy)); } 
-            else { añosUnicos.forEach(a => { s1.add(new Option(a, a)); s2.add(new Option(a, a)); }); }
-            if(añosUnicos.length >= 2) { s1.value = añosUnicos[1]; s2.value = añosUnicos[0]; } 
-            else if (añosUnicos.length === 1) { s1.value = añosUnicos[0]; s2.value = añosUnicos[0]; }
+            const topItems = topContenidosDB
+                .filter(item => (parseInt(item.lecturas) || 0) >= 1000)
+                .sort((a, b) => (parseInt(b.lecturas) || 0) - (parseInt(a.lecturas) || 0));
+
+            if (topItems.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500 font-medium">No hay contenidos con más de 1.000 lecturas registrados en el Top.</td></tr>`;
+                return;
+            }
+
+            topItems.forEach((item, index) => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-4 text-center text-slate-500 font-medium">${index + 1}.</td>
+                        <td class="p-4 font-medium text-slate-700">
+                            ${item.titulo} 
+                        </td>
+                        <td class="p-4 text-right font-black text-slate-700">${parseInt(item.lecturas).toLocaleString('es-CO')}</td>
+                    </tr>
+                `;
+            });
         }
 
-        function renderChartCuentos() {
-            if(chartCuentosVsInst) chartCuentosVsInst.destroy();
-            const s1 = document.getElementById('select-year-1').value; const s2 = document.getElementById('select-year-2').value;
-            if(!s1 || !s2) return;
-            const a1 = parseInt(s1), a2 = parseInt(s2);
-            const v1 = new Array(12).fill(null), s_1 = new Array(12).fill(null), v2 = new Array(12).fill(null), s_2 = new Array(12).fill(null);
-            
-            cuentosVsDB.forEach(i => {
-                if(parseInt(i.año) === a1) { v1[parseInt(i.mes)] = parseInt(i.vistas); s_1[parseInt(i.mes)] = parseInt(i.sesiones); }
-                if(parseInt(i.año) === a2) { v2[parseInt(i.mes)] = parseInt(i.vistas); s_2[parseInt(i.mes)] = parseInt(i.sesiones); }
-            });
+        function renderChartLecturasMensuales() {
+            const labels = [];
+            const dataTotales = [];
+            const dataArticulos = [];
+            const dataCuentos = [];
 
-            chartCuentosVsInst = new Chart(document.getElementById('chartCuentosVs').getContext('2d'), {
+            let añoTarget = new Date().getFullYear();
+            let mesTarget = new Date().getMonth() - 1; 
+
+            if (lecturasMensualesDB.length > 0) {
+                let maxVal = -1;
+                lecturasMensualesDB.forEach(item => {
+                    let val = parseInt(item.año) * 12 + parseInt(item.mes);
+                    if(val > maxVal) {
+                        maxVal = val;
+                        añoTarget = parseInt(item.año);
+                        mesTarget = parseInt(item.mes);
+                    }
+                });
+            }
+
+            for (let i = 12; i >= 0; i--) {
+                let fechaVentana = new Date(añoTarget, mesTarget - i, 1);
+                let targetAño = fechaVentana.getFullYear();
+                let targetMes = fechaVentana.getMonth();
+
+                let registro = lecturasMensualesDB.find(item => parseInt(item.año) === targetAño && parseInt(item.mes) === targetMes);
+
+                labels.push(nombresMeses[targetMes]);
+                
+                if (registro) {
+                    let arts = parseInt(registro.articulos) || 0;
+                    let cts = parseInt(registro.cuentos) || 0;
+                    dataArticulos.push(arts);
+                    dataCuentos.push(cts);
+                    dataTotales.push(arts + cts);
+                } else {
+                    dataArticulos.push(0);
+                    dataCuentos.push(0);
+                    dataTotales.push(0);
+                }
+            }
+
+            chartLecturasMensualesInst = new Chart(document.getElementById('chartLecturasMensuales').getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: nombresMeses.map(m => m.substring(0,3)),
+                    labels: labels,
                     datasets: [
-                        { type: 'bar', label: `Vistas ${a1}`, data: v1, backgroundColor: '#93c5fd', borderRadius: 4 },
-                        { type: 'bar', label: `Vistas ${a2}`, data: v2, backgroundColor: '#0284c7', borderRadius: 4 },
-                        { type: 'line', label: `Sesiones ${a1}`, data: s_1, borderColor: '#86efac', backgroundColor: 'transparent', borderDash: [5, 5], tension: 0.3, pointRadius: 6, pointBackgroundColor: '#86efac', pointBorderColor: '#ffffff', pointBorderWidth: 2, borderWidth: 4 },
-                        { type: 'line', label: `Sesiones ${a2}`, data: s_2, borderColor: '#10b981', backgroundColor: 'transparent', tension: 0.3, pointRadius: 6, pointBackgroundColor: '#10b981', pointBorderColor: '#ffffff', pointBorderWidth: 2, borderWidth: 4 }
+                        { label: 'Totales', data: dataTotales, backgroundColor: '#4d8b31', borderRadius: 2 },
+                        { label: 'Artículos', data: dataArticulos, backgroundColor: '#7cb54c', borderRadius: 2 },
+                        { label: 'Cuentos', data: dataCuentos, backgroundColor: '#b6d7a8', borderRadius: 2 }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, spanGaps: true, plugins: { legend: { position: 'bottom' } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#f1f5f9' }, beginAtZero: true } } }
-            });
-        }
-
-        function renderChartCuentosJuv() {
-            if(chartCuentosJuvVsInst) chartCuentosJuvVsInst.destroy();
-            const s1 = document.getElementById('select-year-juv-1').value; const s2 = document.getElementById('select-year-juv-2').value;
-            if(!s1 || !s2) return;
-            const a1 = parseInt(s1), a2 = parseInt(s2);
-            const v1 = new Array(12).fill(null), s_1 = new Array(12).fill(null), v2 = new Array(12).fill(null), s_2 = new Array(12).fill(null);
-            
-            cuentosJuvVsDB.forEach(i => {
-                if(parseInt(i.año) === a1) { v1[parseInt(i.mes)] = parseInt(i.vistas); s_1[parseInt(i.mes)] = parseInt(i.sesiones); }
-                if(parseInt(i.año) === a2) { v2[parseInt(i.mes)] = parseInt(i.vistas); s_2[parseInt(i.mes)] = parseInt(i.sesiones); }
-            });
-
-            chartCuentosJuvVsInst = new Chart(document.getElementById('chartCuentosJuvVs').getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: nombresMeses.map(m => m.substring(0,3)),
-                    datasets: [
-                        { type: 'bar', label: `Vistas ${a1}`, data: v1, backgroundColor: '#93c5fd', borderRadius: 4 },
-                        { type: 'bar', label: `Vistas ${a2}`, data: v2, backgroundColor: '#0284c7', borderRadius: 4 },
-                        { type: 'line', label: `Sesiones ${a1}`, data: s_1, borderColor: '#86efac', backgroundColor: 'transparent', borderDash: [5, 5], tension: 0.3, pointRadius: 6, pointBackgroundColor: '#86efac', pointBorderColor: '#ffffff', pointBorderWidth: 2, borderWidth: 4 },
-                        { type: 'line', label: `Sesiones ${a2}`, data: s_2, borderColor: '#10b981', backgroundColor: 'transparent', tension: 0.3, pointRadius: 6, pointBackgroundColor: '#10b981', pointBorderColor: '#ffffff', pointBorderWidth: 2, borderWidth: 4 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, spanGaps: true, plugins: { legend: { position: 'bottom' } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#f1f5f9' }, beginAtZero: true } } }
-            });
-        }
-
-        function renderChartArticulos() {
-            if(chartArticulosVsInst) chartArticulosVsInst.destroy();
-            const s1 = document.getElementById('select-year-art-1').value; const s2 = document.getElementById('select-year-art-2').value;
-            if(!s1 || !s2) return;
-            const a1 = parseInt(s1), a2 = parseInt(s2);
-            const v1 = new Array(12).fill(null), s_1 = new Array(12).fill(null), v2 = new Array(12).fill(null), s_2 = new Array(12).fill(null);
-            
-            articulosVsDB.forEach(i => {
-                if(parseInt(i.año) === a1) { v1[parseInt(i.mes)] = parseInt(i.vistas); s_1[parseInt(i.mes)] = parseInt(i.sesiones); }
-                if(parseInt(i.año) === a2) { v2[parseInt(i.mes)] = parseInt(i.vistas); s_2[parseInt(i.mes)] = parseInt(i.sesiones); }
-            });
-
-            chartArticulosVsInst = new Chart(document.getElementById('chartArticulosVs').getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: nombresMeses.map(m => m.substring(0,3)),
-                    datasets: [
-                        { type: 'bar', label: `Vistas ${a1}`, data: v1, backgroundColor: '#93c5fd', borderRadius: 4 },
-                        { type: 'bar', label: `Vistas ${a2}`, data: v2, backgroundColor: '#0284c7', borderRadius: 4 },
-                        { type: 'line', label: `Sesiones ${a1}`, data: s_1, borderColor: '#86efac', backgroundColor: 'transparent', borderDash: [5, 5], tension: 0.3, pointRadius: 6, pointBackgroundColor: '#86efac', pointBorderColor: '#ffffff', pointBorderWidth: 2, borderWidth: 4 },
-                        { type: 'line', label: `Sesiones ${a2}`, data: s_2, borderColor: '#10b981', backgroundColor: 'transparent', tension: 0.3, pointRadius: 6, pointBackgroundColor: '#10b981', pointBorderColor: '#ffffff', pointBorderWidth: 2, borderWidth: 4 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, spanGaps: true, plugins: { legend: { position: 'bottom' } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#f1f5f9' }, beginAtZero: true } } }
-            });
-        }
-
-        function renderChartUsuariosTotales() {
-            if(chartUsuariosTotalesVsInst) chartUsuariosTotalesVsInst.destroy();
-            const s1 = document.getElementById('select-year-us-mensual-1').value; const s2 = document.getElementById('select-year-us-mensual-2').value;
-            if(!s1 || !s2) return;
-            const a1 = parseInt(s1), a2 = parseInt(s2);
-            const u1 = new Array(12).fill(null), u2 = new Array(12).fill(null);
-            
-            usuariosTotalesVsDB.forEach(i => {
-                if(parseInt(i.año) === a1) { u1[parseInt(i.mes)] = parseInt(i.usuarios); }
-                if(parseInt(i.año) === a2) { u2[parseInt(i.mes)] = parseInt(i.usuarios); }
-            });
-
-            chartUsuariosTotalesVsInst = new Chart(document.getElementById('chartUsuariosTotalesVs').getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: nombresMeses.map(m => m.substring(0,3)),
-                    datasets: [
-                        { type: 'bar', label: `Usuarios ${a1}`, data: u1, backgroundColor: '#c084fc', borderRadius: 4 },
-                        { type: 'bar', label: `Usuarios ${a2}`, data: u2, backgroundColor: '#9333ea', borderRadius: 4 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, spanGaps: true, plugins: { legend: { position: 'bottom' } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#f1f5f9' }, beginAtZero: true } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } },
+                        tooltip: { callbacks: { label: function(context) { return ` ${context.dataset.label}: ${context.raw.toLocaleString('es-CO')}`; } } }
+                    }, 
+                    scales: { 
+                        x: { grid: { display: false } }, 
+                        y: { grid: { color: '#f1f5f9' }, beginAtZero: true } 
+                    } 
+                }
             });
         }
 
