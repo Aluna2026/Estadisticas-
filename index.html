@@ -45,17 +45,14 @@
 </head>
 <body class="flex flex-col md:flex-row h-screen bg-slate-50 text-slate-800 overflow-hidden">
 
-    <!-- PANTALLA DE CARGA -->
     <div id="loader" class="fixed inset-0 z-[100] bg-slate-50 flex flex-col items-center justify-center">
         <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
         <h2 class="text-xl font-bold text-slate-700">Conectando con Google Sheets...</h2>
         <p class="text-sm text-slate-500 mt-2">Sincronizando base de datos</p>
     </div>
 
-    <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
     <div id="toast-container" class="fixed top-5 right-5 z-[110] flex flex-col gap-2"></div>
 
-    <!-- VENTANA MODAL PARA CONFIRMAR ELIMINACIÓN -->
     <div id="confirm-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[120] flex items-center justify-center hidden opacity-0">
         <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 transform scale-95" id="confirm-box">
             <h3 class="text-lg font-bold text-slate-800 mb-2">Confirmar Acción</h3>
@@ -67,7 +64,6 @@
         </div>
     </div>
 
-    <!-- MENÚ LATERAL -->
     <aside class="w-full md:w-64 bg-white border-b md:border-r border-slate-200 flex flex-col z-20 shadow-sm shrink-0">
         <div class="p-4 md:p-6 border-b border-slate-100">
             <div class="bg-slate-800 text-white px-4 py-2 rounded font-black tracking-widest text-lg w-full text-center">ALUNA</div>
@@ -90,14 +86,11 @@
         </nav>
     </aside>
 
-    <!-- CONTENEDOR PRINCIPAL -->
     <main class="flex-1 overflow-y-auto p-4 md:p-8 w-full">
 
-        <!-- VISTA 1: DASHBOARD -->
         <section id="vista-dashboard" class="max-w-5xl mx-auto space-y-6 hidden">
             <h1 class="text-2xl font-bold text-slate-800 border-b pb-4">Volumen de Contenidos Registrados</h1>
             
-            <!-- KPIs GLOBALES -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="card text-center flex flex-col justify-center border-t-4 border-t-purple-500">
                     <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Vistas totales de la página</h2>
@@ -121,9 +114,7 @@
                 </div>
             </div>
 
-            <!-- Gráficas Separadas -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Gráfica 1: Proporción -->
                 <div class="card">
                     <h2 class="text-sm font-bold text-slate-700 mb-4 text-center">Distribución del Contenido</h2>
                     <div class="h-64 relative w-full"><canvas id="chartProporcion"></canvas></div>
@@ -132,7 +123,6 @@
                     </div>
                 </div>
                 
-                <!-- Gráfica 2: Lecturas Anuales -->
                 <div class="card">
                     <h2 class="text-sm font-bold text-slate-700 mb-4 text-center">Lecturas Anuales</h2>
                     <div class="h-64 relative w-full"><canvas id="chartAnuales"></canvas></div>
@@ -142,35 +132,50 @@
                 </div>
             </div>
 
-            <!-- Gráfica 3: Lecturas Últimos 13 Meses -->
             <div class="card">
                 <h2 class="text-sm font-bold text-slate-700 mb-4 text-center uppercase tracking-wide">Lecturas de los Últimos 13 Meses</h2>
                 <div class="h-72 relative w-full"><canvas id="chartLecturasMensuales"></canvas></div>
                 <div class="mt-6 text-xs text-slate-600 bg-slate-50 p-3 rounded border border-slate-100">
-                    <p><strong>¿Qué muestra?</strong> Una ventana móvil automática de los 13 meses más recientes a partir del último registro en la base de datos.</p>
+                    <p><strong>¿Qué muestra?</strong> Una ventana móvil automática de los 13 meses más recientes a partir del último registro en la base de datos, rellenando con ceros si faltan meses.</p>
                 </div>
             </div>
 
-            <!-- TABLA DE LOS MÁS LEÍDOS (>1000 LECTURAS) -->
-            <div class="card p-0 overflow-hidden border-none shadow-md">
-                <h2 class="text-lg font-bold text-slate-800 p-4 border-b bg-white">Cuentos y Artículos que tienen más de 1000 lecturas</h2>
-                <div class="overflow-auto table-scroll max-h-[350px]">
-                    <table class="w-full text-sm text-left">
-                        <thead class="bg-[#b3d495] text-slate-800 sticky top-0 z-10 shadow-sm">
-                            <tr>
-                                <th class="p-3 w-12 text-center font-bold">#</th>
-                                <th class="p-3 font-bold">Artículo / Cuento</th>
-                                <th class="p-3 text-right font-bold w-32">Lecturas ▼</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-top-contenidos" class="divide-y divide-slate-100 bg-white">
-                            <!-- Inyectado por JS -->
-                        </tbody>
-                    </table>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card p-0 overflow-hidden border-none shadow-md">
+                    <h2 class="text-base font-bold text-slate-800 p-4 border-b bg-white">Artículos con más de 1000 lecturas</h2>
+                    <div class="overflow-auto table-scroll max-h-[350px]">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-[#b3d495] text-slate-800 sticky top-0 z-10 shadow-sm">
+                                <tr>
+                                    <th class="p-3 w-12 text-center font-bold">#</th>
+                                    <th class="p-3 font-bold">Artículo</th>
+                                    <th class="p-3 text-right font-bold w-28">Lecturas ▼</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-top-articulos" class="divide-y divide-slate-100 bg-white">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="card p-0 overflow-hidden border-none shadow-md">
+                    <h2 class="text-base font-bold text-slate-800 p-4 border-b bg-white">Cuentos con más de 1000 lecturas</h2>
+                    <div class="overflow-auto table-scroll max-h-[350px]">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-[#b3d495] text-slate-800 sticky top-0 z-10 shadow-sm">
+                                <tr>
+                                    <th class="p-3 w-12 text-center font-bold">#</th>
+                                    <th class="p-3 font-bold">Cuento</th>
+                                    <th class="p-3 text-right font-bold w-28">Lecturas ▼</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-top-cuentos" class="divide-y divide-slate-100 bg-white">
+                                </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <!-- NUEVO: KPIs DE BAJAS LECTURAS (DE ÚLTIMAS) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                 <div class="card text-center flex flex-col justify-center border-t-4 border-t-rose-500 shadow-md">
                     <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Artículos por debajo de 500 lecturas</h2>
@@ -184,10 +189,8 @@
 
         </section>
 
-        <!-- VISTA 2: REGISTRO DE INVENTARIO -->
         <section id="vista-registro" class="max-w-5xl mx-auto space-y-6 hidden pb-12">
             
-            <!-- APARTADO 0: MÉTRICAS GLOBALES GENERALES -->
             <h1 class="text-2xl font-bold text-slate-800 border-b pb-4">Actualizar Métricas Globales</h1>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="card lg:col-span-1 h-fit">
@@ -207,8 +210,7 @@
                 </div>
             </div>
 
-            <!-- APARTADO 1: INVENTARIO DE CONTENIDOS -->
-            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-8">Registrar Nuevo Artículo o Cuento (Inventario)</h1>
+            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-8">Registrar Nuevo Artículo o Cuento (Inventario Único)</h1>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="card lg:col-span-1 h-fit">
                     <form id="formContenido" class="space-y-4">
@@ -223,17 +225,24 @@
                                 <option value="Cuento">Cuento</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">ID</label>
-                            <input type="number" id="input-id" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">ID Único</label>
+                                <input type="number" id="input-id" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Visitas / Lecturas</label>
+                                <input type="number" id="input-visitas-inv" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
+                            </div>
                         </div>
+                        <p class="text-[10px] text-slate-500 mt-1">El sistema usará estos datos automáticamente para las tablas de "Top" y "Bajas Lecturas".</p>
                         <button type="submit" id="btn-guardar-form" class="w-full bg-slate-800 text-white font-bold py-3 rounded hover:bg-slate-700 text-sm transition mt-2">
                             Guardar Contenido
                         </button>
                     </form>
                 </div>
                 <div class="card lg:col-span-2">
-                    <h2 class="text-sm font-bold text-slate-700 mb-4">Base de Datos de Publicaciones</h2>
+                    <h2 class="text-sm font-bold text-slate-700 mb-4">Base de Datos Maestra de Publicaciones</h2>
                     <div class="overflow-auto border rounded table-scroll max-h-[350px]">
                         <table class="w-full text-sm text-left min-w-[500px]">
                             <thead class="bg-slate-50 sticky top-0 shadow-sm z-10">
@@ -241,6 +250,7 @@
                                     <th class="p-3 border-b text-slate-500">Categoría</th>
                                     <th class="p-3 border-b text-slate-500">ID</th>
                                     <th class="p-3 border-b text-slate-500">Título</th>
+                                    <th class="p-3 border-b text-slate-500 text-right">Visitas</th>
                                     <th class="p-3 border-b text-slate-500 text-center">Acciones</th>
                                 </tr>
                             </thead>
@@ -251,7 +261,6 @@
                 </div>
             </div>
 
-            <!-- APARTADO 2: LECTURAS ANUALES -->
             <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Lecturas Anuales</h1>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="card lg:col-span-1 h-fit">
@@ -287,7 +296,6 @@
                 </div>
             </div>
 
-            <!-- APARTADO 3: LECTURAS MENSUALES -->
             <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Lecturas Mensuales</h1>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="card lg:col-span-1 h-fit">
@@ -335,67 +343,6 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </div>
-
-            <!-- APARTADO 4: TOP CONTENIDOS MANUAL -->
-            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Top de Contenidos (>1000 lecturas)</h1>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="card lg:col-span-1 h-fit">
-                    <form id="formTopContenidos" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Título de la publicación</label>
-                            <input type="text" id="input-titulo-top" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-lime-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Lecturas</label>
-                            <input type="number" id="input-lecturas-top" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-lime-500 outline-none">
-                        </div>
-                        <button type="submit" id="btn-guardar-top" class="w-full bg-[#8fb36d] text-white font-bold py-3 rounded hover:bg-[#7a9a5c] text-sm transition mt-2">
-                            Guardar en el Top
-                        </button>
-                    </form>
-                </div>
-                <div class="card lg:col-span-2">
-                    <h2 class="text-sm font-bold text-slate-700 mb-4">Base de Datos: Top Contenidos</h2>
-                    <div class="overflow-auto border rounded table-scroll max-h-[350px]">
-                        <table class="w-full text-sm text-left min-w-[400px]">
-                            <thead class="bg-slate-50 sticky top-0 shadow-sm z-10">
-                                <tr>
-                                    <th class="p-3 border-b text-slate-500">Título</th>
-                                    <th class="p-3 border-b text-slate-500 text-right">Lecturas</th>
-                                    <th class="p-3 border-b text-slate-500 text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-registro-top" class="divide-y">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- APARTADO NUEVO: CONTENIDOS CON BAJAS LECTURAS -->
-            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Alertas de Bajas Lecturas</h1>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="card lg:col-span-1 h-fit">
-                    <form id="formBajasLecturas" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Artículos con menos de 500 lecturas</label>
-                            <input type="number" id="input-articulos-bajos" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-rose-500 outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Escribe la cantidad de artículos que cumplen esto.</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Cuentos con menos de 100 lecturas</label>
-                            <input type="number" id="input-cuentos-bajos" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-orange-500 outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1">Escribe la cantidad de cuentos que cumplen esto.</p>
-                        </div>
-                        <button type="submit" id="btn-guardar-bajos" class="w-full bg-rose-600 text-white font-bold py-3 rounded hover:bg-rose-700 text-sm transition mt-2">
-                            Guardar Alertas
-                        </button>
-                    </form>
-                </div>
-                <div class="card lg:col-span-2 flex flex-col justify-center bg-slate-50/50 border border-dashed border-slate-300 p-6 text-center">
-                    <p class="text-sm text-slate-600 font-medium">Estos datos se ingresan manualmente para monitorear el volumen de los contenidos que requieren mayor atención o difusión estratégica. Aparecerán en la parte inferior del Dashboard.</p>
                 </div>
             </div>
 
@@ -451,15 +398,20 @@
             });
         }
 
+        // --- FILTRO INTELIGENTE DE NORMALIZACIÓN ---
+        function normalizarTipo(tipo) {
+            // Convierte a minúscula, quita tildes, quita espacios extra. Ej: " Artículo " -> "articulo"
+            return String(tipo || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        }
+
         // Variables de datos
         let inventario = [];
         let lecturasAnualesDB = [];
         let lecturasMensualesDB = []; 
         let metricasGlobales = [];
-        let topContenidosDB = [];
 
         let chartProporcionInst = null, chartAnualesInst = null, chartLecturasMensualesInst = null;
-        let editandoId = null, editandoAño = null, editandoIdLM = null, editandoIdTop = null;
+        let editandoId = null, editandoAño = null, editandoIdLM = null;
 
         const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
@@ -468,10 +420,9 @@
             const loader = document.getElementById('loader');
             
             if (!URL_GOOGLE_SHEETS) {
-                cargarSemillas();
                 hideLoader(loader);
                 switchTab('dashboard');
-                showToast("Modo Offline (Datos de prueba cargados)", "error");
+                showToast("Falta URL de Google Sheets", "error");
                 return;
             }
             try {
@@ -482,43 +433,20 @@
                 if(data.Lecturas_Anuales) lecturasAnualesDB = data.Lecturas_Anuales;
                 if(data.Lecturas_Mensuales) lecturasMensualesDB = data.Lecturas_Mensuales;
                 if(data.Metricas_Globales) metricasGlobales = data.Metricas_Globales;
-                if(data.Top_Contenidos) topContenidosDB = data.Top_Contenidos;
 
                 hideLoader(loader);
                 switchTab('dashboard');
                 showToast("Base de datos conectada exitosamente", "success");
             } catch (error) {
-                cargarSemillas();
                 hideLoader(loader);
                 switchTab('dashboard');
-                showToast("Error de conexión. Modo Offline activo.", "error");
+                showToast("Error de conexión con la base de datos.", "error");
             }
         };
 
         function hideLoader(loader) {
             loader.style.opacity = '0';
             setTimeout(() => { loader.style.display = 'none'; }, 400);
-        }
-
-        function cargarSemillas() {
-            inventario = [
-                { id: 1, titulo: '¡Colorín Colorado! Esta Contaminación Puede Hacerse A Un Lado', tipo: 'Articulo' },
-                { id: 2, titulo: 'No Es Culpa De La Vaca', tipo: 'Cuento' },
-                { id: 3, titulo: 'Combustible A Partir De Llantas Usadas', tipo: 'Articulo' }
-            ];
-            lecturasAnualesDB = [
-                { año: 2024, lecturas: 33464 }, { año: 2025, lecturas: 21676 }
-            ];
-            lecturasMensualesDB = [
-                { id: 1, año: 2026, mes: 4, articulos: 4500, cuentos: 1797 }
-            ];
-            metricasGlobales = [
-                { vistas_totales: 145230, articulos_bajos: 12, cuentos_bajos: 5 }
-            ];
-            topContenidosDB = [
-                { id: 1, titulo: 'Las creativas formas de usar el tallo de plátano en artesanías', lecturas: 4847 },
-                { id: 2, titulo: 'Una luz de esperanza para el planeta: Energías renovables', lecturas: 4219 }
-            ];
         }
 
         // --- SISTEMA INTELIGENTE DE SINCRONIZACIÓN ---
@@ -559,12 +487,9 @@
                 renderTabla(); 
                 renderTablaAnuales(); 
                 renderTablaLecturasMensuales();
-                renderTablaTopRegistro();
                 
                 if (metricasGlobales && metricasGlobales.length > 0) {
                     document.getElementById('input-vistas-global').value = metricasGlobales[0].vistas_totales || 0;
-                    document.getElementById('input-articulos-bajos').value = metricasGlobales[0].articulos_bajos || 0;
-                    document.getElementById('input-cuentos-bajos').value = metricasGlobales[0].cuentos_bajos || 0;
                 }
             }
         }
@@ -579,10 +504,7 @@
             
             btn.innerText = "Guardando..."; btn.disabled = true;
             
-            let artBajos = metricasGlobales.length > 0 ? metricasGlobales[0].articulos_bajos : 0;
-            let cuentosBajos = metricasGlobales.length > 0 ? metricasGlobales[0].cuentos_bajos : 0;
-            
-            metricasGlobales = [{ vistas_totales: vistas, articulos_bajos: artBajos, cuentos_bajos: cuentosBajos }];
+            metricasGlobales = [{ vistas_totales: vistas }];
             await syncToCloud('Metricas_Globales', metricasGlobales);
             
             document.getElementById('kpi-vistas-totales').innerText = vistas.toLocaleString('es-CO');
@@ -590,91 +512,13 @@
             btn.innerText = "Actualizar Vistas"; btn.disabled = false;
         });
 
-        // NUEVO: MÉTRICAS GLOBALES (BAJAS LECTURAS)
-        document.getElementById('formBajasLecturas').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const artBajos = parseInt(document.getElementById('input-articulos-bajos').value) || 0;
-            const cuentosBajos = parseInt(document.getElementById('input-cuentos-bajos').value) || 0;
-            const btn = document.getElementById('btn-guardar-bajos');
-            
-            btn.innerText = "Guardando..."; btn.disabled = true;
-            
-            let vistas = metricasGlobales.length > 0 ? metricasGlobales[0].vistas_totales : 0;
-            
-            metricasGlobales = [{ vistas_totales: vistas, articulos_bajos: artBajos, cuentos_bajos: cuentosBajos }];
-            await syncToCloud('Metricas_Globales', metricasGlobales);
-            
-            document.getElementById('kpi-articulos-bajos').innerText = artBajos.toLocaleString('es-CO');
-            document.getElementById('kpi-cuentos-bajos').innerText = cuentosBajos.toLocaleString('es-CO');
-            
-            btn.innerText = "Guardar Alertas"; btn.disabled = false;
-        });
-
-        // TOP CONTENIDOS MANUAL
-        document.getElementById('formTopContenidos').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const inputTitulo = document.getElementById('input-titulo-top').value;
-            const inputLecturas = parseInt(document.getElementById('input-lecturas-top').value);
-            const btn = document.getElementById('btn-guardar-top');
-            
-            btn.innerText = "Guardando..."; btn.disabled = true;
-            
-            if (editandoIdTop !== null) {
-                const index = topContenidosDB.findIndex(i => parseInt(i.id) === parseInt(editandoIdTop));
-                if (index > -1) { 
-                    topContenidosDB[index].titulo = inputTitulo; 
-                    topContenidosDB[index].lecturas = inputLecturas; 
-                }
-                editandoIdTop = null; 
-            } else { 
-                topContenidosDB.push({ id: Date.now(), titulo: inputTitulo, lecturas: inputLecturas }); 
-            }
-            
-            await syncToCloud('Top_Contenidos', topContenidosDB);
-            this.reset(); renderTablaTopRegistro();
-            btn.innerText = "Guardar en el Top"; btn.disabled = false;
-        });
-
-        function editarTopContenido(id) {
-            const item = topContenidosDB.find(i => parseInt(i.id) === parseInt(id));
-            if(item) {
-                document.getElementById('input-titulo-top').value = item.titulo; 
-                document.getElementById('input-lecturas-top').value = item.lecturas;
-                editandoIdTop = id; document.getElementById('btn-guardar-top').innerText = "Actualizar en el Top";
-            }
-        }
-
-        async function eliminarTopContenido(id) {
-            if(await customConfirm("¿Estás seguro de que deseas eliminar este contenido del Top?")) {
-                topContenidosDB = topContenidosDB.filter(i => parseInt(i.id) !== parseInt(id));
-                await syncToCloud('Top_Contenidos', topContenidosDB); renderTablaTopRegistro();
-            }
-        }
-
-        function renderTablaTopRegistro() {
-            const tbody = document.getElementById('tabla-registro-top'); tbody.innerHTML = '';
-            const ordenados = [...topContenidosDB].sort((a, b) => parseInt(b.lecturas) - parseInt(a.lecturas));
-            ordenados.forEach(item => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 text-slate-700 font-medium truncate max-w-[200px]" title="${item.titulo}">${item.titulo}</td>
-                        <td class="p-3 text-right text-slate-600 font-black">${parseInt(item.lecturas).toLocaleString('es-CO')}</td>
-                        <td class="p-3 flex justify-center gap-2">
-                            <button type="button" onclick="editarTopContenido(${item.id})" class="text-blue-600 hover:text-blue-800 text-xs font-bold underline">Editar</button>
-                            <button type="button" onclick="eliminarTopContenido(${item.id})" class="text-red-600 hover:text-red-800 text-xs font-bold underline">Eliminar</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-
-        // 1. INVENTARIO
+        // 1. INVENTARIO (LISTA ÚNICA)
         document.getElementById('formContenido').addEventListener('submit', async function(e) {
             e.preventDefault();
             const inputId = parseInt(document.getElementById('input-id').value);
             const inputTitulo = document.getElementById('input-titulo').value;
             const inputTipo = document.getElementById('input-tipo').value;
+            const inputVisitas = parseInt(document.getElementById('input-visitas-inv').value) || 0;
             const btn = document.getElementById('btn-guardar-form');
             
             btn.innerText = "Guardando..."; btn.disabled = true;
@@ -684,10 +528,11 @@
                 if (index > -1) { 
                     inventario[index].id = inputId; 
                     inventario[index].titulo = inputTitulo; 
-                    inventario[index].tipo = inputTipo; 
+                    inventario[index].tipo = inputTipo;
+                    inventario[index].visitas = inputVisitas; 
                 }
                 editandoId = null; 
-            } else { inventario.push({ id: inputId, titulo: inputTitulo, tipo: inputTipo }); }
+            } else { inventario.push({ id: inputId, titulo: inputTitulo, tipo: inputTipo, visitas: inputVisitas }); }
             
             await syncToCloud('Inventario', inventario);
             this.reset(); renderTabla();
@@ -699,7 +544,12 @@
             if(item) {
                 document.getElementById('input-id').value = item.id; 
                 document.getElementById('input-titulo').value = item.titulo; 
-                document.getElementById('input-tipo').value = item.tipo;
+                
+                // Normalizar para que el select entienda bien si venia mal de Excel
+                const tipoNormalizado = normalizarTipo(item.tipo);
+                document.getElementById('input-tipo').value = tipoNormalizado === 'articulo' ? 'Articulo' : 'Cuento';
+                
+                document.getElementById('input-visitas-inv').value = item.visitas || 0;
                 editandoId = id; document.getElementById('btn-guardar-form').innerText = "Actualizar Contenido";
             }
         }
@@ -715,12 +565,16 @@
             const tbody = document.getElementById('tabla-contenidos'); tbody.innerHTML = '';
             const ordenados = [...inventario].sort((a, b) => parseInt(b.id) - parseInt(a.id));
             ordenados.forEach(item => {
-                const colorTipo = item.tipo === 'Articulo' ? 'text-sky-600 bg-sky-50' : 'text-emerald-600 bg-emerald-50';
+                const tipoNormalizado = normalizarTipo(item.tipo);
+                const colorTipo = tipoNormalizado === 'articulo' ? 'text-sky-600 bg-sky-50' : 'text-emerald-600 bg-emerald-50';
+                const textoTipo = tipoNormalizado === 'articulo' ? 'Artículo' : 'Cuento';
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3"><span class="px-2 py-1 rounded text-xs font-bold ${colorTipo}">${item.tipo}</span></td>
+                        <td class="p-3"><span class="px-2 py-1 rounded text-xs font-bold ${colorTipo}">${textoTipo}</span></td>
                         <td class="p-3 text-slate-500 font-medium">${item.id}</td>
                         <td class="p-3">${item.titulo}</td>
+                        <td class="p-3 text-right font-bold text-slate-600">${parseInt(item.visitas || 0).toLocaleString('es-CO')}</td>
                         <td class="p-3 flex justify-center gap-2">
                             <button type="button" onclick="editarContenido(${item.id})" class="text-blue-600 hover:text-blue-800 text-xs font-bold underline">Editar</button>
                             <button type="button" onclick="eliminarContenido(${item.id})" class="text-red-600 hover:text-red-800 text-xs font-bold underline">Eliminar</button>
@@ -863,33 +717,42 @@
             });
         }
 
-        // --- 8. LÓGICA DEL DASHBOARD ---
+        // --- 8. LÓGICA DEL DASHBOARD (AUTOMATIZADA DESDE INVENTARIO) ---
         function actualizarDashboard() {
             
+            // 1. Vistas Totales (Globales)
             if (metricasGlobales && metricasGlobales.length > 0) {
                 document.getElementById('kpi-vistas-totales').innerText = (parseInt(metricasGlobales[0].vistas_totales) || 0).toLocaleString('es-CO');
-                document.getElementById('kpi-articulos-bajos').innerText = (parseInt(metricasGlobales[0].articulos_bajos) || 0).toLocaleString('es-CO');
-                document.getElementById('kpi-cuentos-bajos').innerText = (parseInt(metricasGlobales[0].cuentos_bajos) || 0).toLocaleString('es-CO');
             }
 
+            // 2. Lecturas Totales (Suma de Lecturas Anuales)
             const totalLecturasAnuales = lecturasAnualesDB.reduce((sum, item) => sum + (parseInt(item.lecturas) || 0), 0);
             document.getElementById('kpi-lecturas-totales').innerText = totalLecturasAnuales.toLocaleString('es-CO');
 
-            const totalArticulos = inventario.filter(i => i.tipo === 'Articulo').length;
-            const totalCuentos = inventario.filter(i => i.tipo === 'Cuento').length;
+            // 3. Cálculos automáticos desde el Inventario usando el FILTRO INTELIGENTE
+            const articulos = inventario.filter(i => normalizarTipo(i.tipo) === 'articulo');
+            const cuentos = inventario.filter(i => normalizarTipo(i.tipo) === 'cuento');
             
-            document.getElementById('kpi-articulos').innerText = totalArticulos;
-            document.getElementById('kpi-cuentos').innerText = totalCuentos;
+            document.getElementById('kpi-articulos').innerText = articulos.length.toLocaleString('es-CO');
+            document.getElementById('kpi-cuentos').innerText = cuentos.length.toLocaleString('es-CO');
 
-            renderTopContenidos();
+            const artBajos = articulos.filter(i => (parseInt(i.visitas) || 0) < 500).length;
+            const cuentosBajos = cuentos.filter(i => (parseInt(i.visitas) || 0) < 100).length;
+            
+            document.getElementById('kpi-articulos-bajos').innerText = artBajos.toLocaleString('es-CO');
+            document.getElementById('kpi-cuentos-bajos').innerText = cuentosBajos.toLocaleString('es-CO');
 
+            // 4. Renderizar Tablas Top automáticas
+            renderTopContenidos(articulos, cuentos);
+
+            // 5. Gráficas
             if(chartProporcionInst) chartProporcionInst.destroy();
             if(chartAnualesInst) chartAnualesInst.destroy();
             if(chartLecturasMensualesInst) chartLecturasMensualesInst.destroy();
 
             chartProporcionInst = new Chart(document.getElementById('chartProporcion').getContext('2d'), {
                 type: 'doughnut',
-                data: { labels: ['Artículos', 'Cuentos'], datasets: [{ data: [totalArticulos, totalCuentos], backgroundColor: ['#0284c7', '#10b981'], borderWidth: 0 }] },
+                data: { labels: ['Artículos', 'Cuentos'], datasets: [{ data: [articulos.length, cuentos.length], backgroundColor: ['#0284c7', '#10b981'], borderWidth: 0 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
             });
 
@@ -903,31 +766,51 @@
             renderChartLecturasMensuales();
         }
 
-        // --- RENDERIZAR TABLA TOP EN DASHBOARD ---
-        function renderTopContenidos() {
-            const tbody = document.getElementById('tabla-top-contenidos');
-            tbody.innerHTML = '';
+        // --- RENDERIZAR TABLAS TOP AUTOMÁTICAS ---
+        function renderTopContenidos(articulos, cuentos) {
+            const tbodyArticulos = document.getElementById('tabla-top-articulos');
+            const tbodyCuentos = document.getElementById('tabla-top-cuentos');
             
-            const topItems = topContenidosDB
-                .filter(item => (parseInt(item.lecturas) || 0) >= 1000)
-                .sort((a, b) => (parseInt(b.lecturas) || 0) - (parseInt(a.lecturas) || 0));
+            tbodyArticulos.innerHTML = '';
+            tbodyCuentos.innerHTML = '';
+            
+            const topArticulos = articulos
+                .filter(item => (parseInt(item.visitas) || 0) >= 1000)
+                .sort((a, b) => (parseInt(b.visitas) || 0) - (parseInt(a.visitas) || 0));
 
-            if (topItems.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500 font-medium">No hay contenidos con más de 1.000 lecturas registrados en el Top.</td></tr>`;
-                return;
+            const topCuentos = cuentos
+                .filter(item => (parseInt(item.visitas) || 0) >= 1000)
+                .sort((a, b) => (parseInt(b.visitas) || 0) - (parseInt(a.visitas) || 0));
+
+            // Artículos
+            if (topArticulos.length === 0) {
+                tbodyArticulos.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500 font-medium">No hay artículos registrados con 1.000 o más lecturas en el inventario.</td></tr>`;
+            } else {
+                topArticulos.forEach((item, index) => {
+                    tbodyArticulos.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4 text-center text-slate-500 font-medium">${index + 1}.</td>
+                            <td class="p-4 font-medium text-slate-700">${item.titulo}</td>
+                            <td class="p-4 text-right font-black text-slate-700">${parseInt(item.visitas).toLocaleString('es-CO')}</td>
+                        </tr>
+                    `;
+                });
             }
 
-            topItems.forEach((item, index) => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="p-4 text-center text-slate-500 font-medium">${index + 1}.</td>
-                        <td class="p-4 font-medium text-slate-700">
-                            ${item.titulo} 
-                        </td>
-                        <td class="p-4 text-right font-black text-slate-700">${parseInt(item.lecturas).toLocaleString('es-CO')}</td>
-                    </tr>
-                `;
-            });
+            // Cuentos
+            if (topCuentos.length === 0) {
+                tbodyCuentos.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500 font-medium">No hay cuentos registrados con 1.000 o más lecturas en el inventario.</td></tr>`;
+            } else {
+                topCuentos.forEach((item, index) => {
+                    tbodyCuentos.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4 text-center text-slate-500 font-medium">${index + 1}.</td>
+                            <td class="p-4 font-medium text-slate-700">${item.titulo}</td>
+                            <td class="p-4 text-right font-black text-slate-700">${parseInt(item.visitas).toLocaleString('es-CO')}</td>
+                        </tr>
+                    `;
+                });
+            }
         }
 
         function renderChartLecturasMensuales() {
