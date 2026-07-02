@@ -400,7 +400,6 @@
 
         // --- FILTRO INTELIGENTE DE NORMALIZACIÓN ---
         function normalizarTipo(tipo) {
-            // Convierte a minúscula, quita tildes, quita espacios extra. Ej: " Artículo " -> "articulo"
             return String(tipo || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
         }
 
@@ -545,7 +544,6 @@
                 document.getElementById('input-id').value = item.id; 
                 document.getElementById('input-titulo').value = item.titulo; 
                 
-                // Normalizar para que el select entienda bien si venia mal de Excel
                 const tipoNormalizado = normalizarTipo(item.tipo);
                 document.getElementById('input-tipo').value = tipoNormalizado === 'articulo' ? 'Articulo' : 'Cuento';
                 
@@ -760,7 +758,33 @@
             chartAnualesInst = new Chart(document.getElementById('chartAnuales').getContext('2d'), {
                 type: 'bar',
                 data: { labels: ordenadosAnuales.map(i => i.año.toString()), datasets: [{ label: 'Lecturas', data: ordenadosAnuales.map(i => parseInt(i.lecturas)), backgroundColor: '#65a30d', borderRadius: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { display: false, grid: { display: false } } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    layout: { padding: { top: 20 } },
+                    plugins: { legend: { display: false } }, 
+                    scales: { x: { grid: { display: false } }, y: { display: false, grid: { display: false }, beginAtZero: true } } 
+                },
+                plugins: [{
+                    id: 'topLabelsAnuales',
+                    afterDatasetsDraw(chart) {
+                        const ctx = chart.ctx;
+                        chart.data.datasets.forEach((dataset, i) => {
+                            chart.getDatasetMeta(i).data.forEach((datapoint, index) => {
+                                const value = dataset.data[index];
+                                if (value > 0) {
+                                    ctx.save();
+                                    ctx.font = 'bold 12px sans-serif';
+                                    ctx.fillStyle = '#475569';
+                                    ctx.textAlign = 'center';
+                                    ctx.textBaseline = 'bottom';
+                                    ctx.fillText(value.toLocaleString('es-CO'), datapoint.x, datapoint.y - 5);
+                                    ctx.restore();
+                                }
+                            });
+                        });
+                    }
+                }]
             });
 
             renderChartLecturasMensuales();
@@ -869,6 +893,7 @@
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
+                    layout: { padding: { top: 25 } },
                     plugins: { 
                         legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } },
                         tooltip: { callbacks: { label: function(context) { return ` ${context.dataset.label}: ${context.raw.toLocaleString('es-CO')}`; } } }
@@ -877,7 +902,29 @@
                         x: { grid: { display: false } }, 
                         y: { grid: { color: '#f1f5f9' }, beginAtZero: true } 
                     } 
-                }
+                },
+                plugins: [{
+                    id: 'topLabelsMensuales',
+                    afterDatasetsDraw(chart) {
+                        const ctx = chart.ctx;
+                        chart.data.datasets.forEach((dataset, i) => {
+                            if (dataset.label === 'Totales') {
+                                chart.getDatasetMeta(i).data.forEach((datapoint, index) => {
+                                    const value = dataset.data[index];
+                                    if (value > 0) {
+                                        ctx.save();
+                                        ctx.font = 'bold 11px sans-serif';
+                                        ctx.fillStyle = '#475569';
+                                        ctx.textAlign = 'center';
+                                        ctx.textBaseline = 'bottom';
+                                        ctx.fillText(value.toLocaleString('es-CO'), datapoint.x, datapoint.y - 5);
+                                        ctx.restore();
+                                    }
+                                });
+                            }
+                        });
+                    }
+                }]
             });
         }
 
