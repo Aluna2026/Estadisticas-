@@ -140,9 +140,10 @@
                 </div>
             </div>
 
+            <!-- TABLAS DEL TOP HISTÓRICO (MANUAL - TOP 10) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="card p-0 overflow-hidden border-none shadow-md">
-                    <h2 class="text-base font-bold text-slate-800 p-4 border-b bg-white">Artículos con más de 1000 lecturas</h2>
+                    <h2 class="text-base font-bold text-slate-800 p-4 border-b bg-white">Top 10 Artículos más leídos</h2>
                     <div class="overflow-auto table-scroll max-h-[350px]">
                         <table class="w-full text-sm text-left">
                             <thead class="bg-[#b3d495] text-slate-800 sticky top-0 z-10 shadow-sm">
@@ -159,7 +160,7 @@
                 </div>
                 
                 <div class="card p-0 overflow-hidden border-none shadow-md">
-                    <h2 class="text-base font-bold text-slate-800 p-4 border-b bg-white">Cuentos con más de 1000 lecturas</h2>
+                    <h2 class="text-base font-bold text-slate-800 p-4 border-b bg-white">Top 10 Cuentos más leídos</h2>
                     <div class="overflow-auto table-scroll max-h-[350px]">
                         <table class="w-full text-sm text-left">
                             <thead class="bg-[#b3d495] text-slate-800 sticky top-0 z-10 shadow-sm">
@@ -176,7 +177,9 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- TABLAS DE TOP MENSUAL (MANUAL) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                <!-- Top Artículos Mensual -->
                 <div class="card p-0 overflow-hidden border-none shadow-md">
                     <h2 class="text-base font-bold text-slate-800 p-4 border-b bg-white">Top Artículos (Último Mes)</h2>
                     <div class="overflow-auto table-scroll max-h-[350px]">
@@ -194,6 +197,7 @@
                     </div>
                 </div>
                 
+                <!-- Top Cuentos Mensual -->
                 <div class="card p-0 overflow-hidden border-none shadow-md">
                     <h2 class="text-base font-bold text-slate-800 p-4 border-b bg-white">Top Cuentos (Último Mes)</h2>
                     <div class="overflow-auto table-scroll max-h-[350px]">
@@ -212,7 +216,7 @@
                 </div>
             </div>
 
-            <!-- NUEVO: TOP USUARIOS POR PAÍS (HISTÓRICO Y ÚLTIMO MES) -->
+            <!-- TABLAS DE TOP USUARIOS POR PAÍS (HISTÓRICO Y ÚLTIMO MES) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="card p-0 overflow-hidden border-none shadow-md">
                     <h2 class="text-base font-bold text-slate-800 p-4 border-b bg-white">Top Usuarios por País (Histórico)</h2>
@@ -283,6 +287,98 @@
                 </div>
             </div>
 
+            <!-- APARTADO NUEVO: TOP HISTÓRICO MANUAL -->
+            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-8">Registrar Top 10 Histórico</h1>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="card lg:col-span-1 h-fit">
+                    <form id="formTopHistorico" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Título de la publicación</label>
+                            <input type="text" id="input-titulo-top-historico" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-green-500 outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Tipo</label>
+                                <select id="input-tipo-top-historico" class="w-full border border-slate-300 rounded p-2 text-sm bg-white outline-none">
+                                    <option value="Articulo">Artículo</option>
+                                    <option value="Cuento">Cuento</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Lecturas</label>
+                                <input type="number" id="input-visitas-top-historico" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-green-500 outline-none">
+                            </div>
+                        </div>
+                        <button type="submit" id="btn-guardar-top-historico" class="w-full bg-[#b3d495] text-slate-800 font-bold py-3 rounded hover:bg-[#a1c482] text-sm transition mt-2">
+                            Guardar en Top Histórico
+                        </button>
+                    </form>
+                </div>
+                <div class="card lg:col-span-2">
+                    <h2 class="text-sm font-bold text-slate-700 mb-4">Base de Datos: Top Histórico</h2>
+                    <div class="overflow-auto border rounded table-scroll max-h-[350px]">
+                        <table class="w-full text-sm text-left min-w-[500px]">
+                            <thead class="bg-slate-50 sticky top-0 shadow-sm z-10">
+                                <tr>
+                                    <th class="p-3 border-b text-slate-500">Tipo</th>
+                                    <th class="p-3 border-b text-slate-500">Título</th>
+                                    <th class="p-3 border-b text-slate-500 text-right">Lecturas</th>
+                                    <th class="p-3 border-b text-slate-500 text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-registro-top-historico" class="divide-y">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TOP MENSUAL -->
+            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Top del Último Mes</h1>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="card lg:col-span-1 h-fit">
+                    <form id="formTopMensual" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Título de la publicación</label>
+                            <input type="text" id="input-titulo-top-mensual" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-indigo-500 outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Tipo</label>
+                                <select id="input-tipo-top-mensual" class="w-full border border-slate-300 rounded p-2 text-sm bg-white outline-none">
+                                    <option value="Articulo">Artículo</option>
+                                    <option value="Cuento">Cuento</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Visitas</label>
+                                <input type="number" id="input-visitas-top-mensual" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-indigo-500 outline-none">
+                            </div>
+                        </div>
+                        <button type="submit" id="btn-guardar-top-mensual" class="w-full bg-indigo-600 text-white font-bold py-3 rounded hover:bg-indigo-700 text-sm transition mt-2">
+                            Guardar en Top Mensual
+                        </button>
+                    </form>
+                </div>
+                <div class="card lg:col-span-2">
+                    <h2 class="text-sm font-bold text-slate-700 mb-4">Base de Datos: Top Último Mes</h2>
+                    <div class="overflow-auto border rounded table-scroll max-h-[350px]">
+                        <table class="w-full text-sm text-left min-w-[500px]">
+                            <thead class="bg-slate-50 sticky top-0 shadow-sm z-10">
+                                <tr>
+                                    <th class="p-3 border-b text-slate-500">Tipo</th>
+                                    <th class="p-3 border-b text-slate-500">Título</th>
+                                    <th class="p-3 border-b text-slate-500 text-right">Visitas</th>
+                                    <th class="p-3 border-b text-slate-500 text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-registro-top-mensual" class="divide-y">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-8">Registrar Nuevo Artículo o Cuento (Inventario Único)</h1>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="card lg:col-span-1 h-fit">
@@ -308,7 +404,7 @@
                                 <input type="number" id="input-visitas-inv" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
                             </div>
                         </div>
-                        <p class="text-[10px] text-slate-500 mt-1">El sistema usará estos datos automáticamente para las tablas de "Top" y "Bajas Lecturas".</p>
+                        <p class="text-[10px] text-slate-500 mt-1">El sistema usará estos datos para las métricas globales y alertas de bajas lecturas.</p>
                         <button type="submit" id="btn-guardar-form" class="w-full bg-slate-800 text-white font-bold py-3 rounded hover:bg-slate-700 text-sm transition mt-2">
                             Guardar Contenido
                         </button>
@@ -419,52 +515,7 @@
                 </div>
             </div>
 
-            <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Top del Último Mes</h1>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="card lg:col-span-1 h-fit">
-                    <form id="formTopMensual" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Título de la publicación</label>
-                            <input type="text" id="input-titulo-top-mensual" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-indigo-500 outline-none">
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-600 mb-1">Tipo</label>
-                                <select id="input-tipo-top-mensual" class="w-full border border-slate-300 rounded p-2 text-sm bg-white outline-none">
-                                    <option value="Articulo">Artículo</option>
-                                    <option value="Cuento">Cuento</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-600 mb-1">Visitas</label>
-                                <input type="number" id="input-visitas-top-mensual" required class="w-full border border-slate-300 rounded p-2 text-sm focus:border-indigo-500 outline-none">
-                            </div>
-                        </div>
-                        <button type="submit" id="btn-guardar-top-mensual" class="w-full bg-indigo-600 text-white font-bold py-3 rounded hover:bg-indigo-700 text-sm transition mt-2">
-                            Guardar en Top Mensual
-                        </button>
-                    </form>
-                </div>
-                <div class="card lg:col-span-2">
-                    <h2 class="text-sm font-bold text-slate-700 mb-4">Base de Datos: Top Último Mes</h2>
-                    <div class="overflow-auto border rounded table-scroll max-h-[350px]">
-                        <table class="w-full text-sm text-left min-w-[500px]">
-                            <thead class="bg-slate-50 sticky top-0 shadow-sm z-10">
-                                <tr>
-                                    <th class="p-3 border-b text-slate-500">Tipo</th>
-                                    <th class="p-3 border-b text-slate-500">Título</th>
-                                    <th class="p-3 border-b text-slate-500 text-right">Visitas</th>
-                                    <th class="p-3 border-b text-slate-500 text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-registro-top-mensual" class="divide-y">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- NUEVO: REGISTRO DE USUARIOS POR PAÍS (HISTÓRICO) -->
+            <!-- REGISTRO DE USUARIOS POR PAÍS (HISTÓRICO) -->
             <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Usuarios por País (Histórico)</h1>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="card lg:col-span-1 h-fit">
@@ -500,7 +551,7 @@
                 </div>
             </div>
 
-            <!-- NUEVO: REGISTRO DE USUARIOS POR PAÍS (ÚLTIMO MES) -->
+            <!-- REGISTRO DE USUARIOS POR PAÍS (ÚLTIMO MES) -->
             <h1 class="text-2xl font-bold text-slate-800 border-b pb-4 mt-12">Registrar Usuarios por País (Último Mes)</h1>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="card lg:col-span-1 h-fit">
@@ -596,11 +647,12 @@
         let lecturasMensualesDB = []; 
         let metricasGlobales = [];
         let topMensualDB = [];
+        let topHistoricoDB = []; // NUEVA VARIABLE PARA TOP 10 HISTORICO
         let usuariosPaisDB = [];
         let usuariosPaisMensualDB = [];
 
         let chartProporcionInst = null, chartAnualesInst = null, chartLecturasMensualesInst = null;
-        let editandoId = null, editandoAño = null, editandoIdLM = null, editandoIdTopMensual = null;
+        let editandoId = null, editandoAño = null, editandoIdLM = null, editandoIdTopMensual = null, editandoIdTopHistorico = null;
         let editandoIdPais = null, editandoIdPaisMensual = null;
 
         const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -623,6 +675,7 @@
                 if(data.Lecturas_Mensuales) lecturasMensualesDB = data.Lecturas_Mensuales;
                 if(data.Metricas_Globales) metricasGlobales = data.Metricas_Globales;
                 if(data.Top_Mensual) topMensualDB = data.Top_Mensual;
+                if(data.Top_Historico) topHistoricoDB = data.Top_Historico;
                 if(data.Usuarios_Pais) usuariosPaisDB = data.Usuarios_Pais;
                 if(data.Usuarios_Pais_Mensual) usuariosPaisMensualDB = data.Usuarios_Pais_Mensual;
 
@@ -677,6 +730,7 @@
                 renderTabla(); 
                 renderTablaAnuales(); 
                 renderTablaLecturasMensuales();
+                renderTablaTopHistoricoRegistro();
                 renderTablaTopMensualRegistro();
                 renderTablaPaisHistoricoRegistro();
                 renderTablaPaisMensualRegistro();
@@ -701,6 +755,72 @@
             
             btn.innerText = "Actualizar Vistas"; btn.disabled = false;
         });
+
+        // --- NUEVO: TOP HISTORICO MANUAL ---
+        document.getElementById('formTopHistorico').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const inputTitulo = document.getElementById('input-titulo-top-historico').value;
+            const inputVisitas = parseInt(document.getElementById('input-visitas-top-historico').value) || 0;
+            const inputTipo = document.getElementById('input-tipo-top-historico').value;
+            const btn = document.getElementById('btn-guardar-top-historico');
+            
+            btn.innerText = "Guardando..."; btn.disabled = true;
+            
+            if (editandoIdTopHistorico !== null) {
+                const index = topHistoricoDB.findIndex(i => parseInt(i.id) === parseInt(editandoIdTopHistorico));
+                if (index > -1) { 
+                    topHistoricoDB[index].titulo = inputTitulo; 
+                    topHistoricoDB[index].visitas = inputVisitas; 
+                    topHistoricoDB[index].tipo = inputTipo; 
+                }
+                editandoIdTopHistorico = null; 
+            } else { 
+                topHistoricoDB.push({ id: Date.now(), titulo: inputTitulo, visitas: inputVisitas, tipo: inputTipo }); 
+            }
+            
+            await syncToCloud('Top_Historico', topHistoricoDB);
+            this.reset(); renderTablaTopHistoricoRegistro();
+            btn.innerText = "Guardar en Top Histórico"; btn.disabled = false;
+        });
+
+        function editarTopHistorico(id) {
+            const item = topHistoricoDB.find(i => parseInt(i.id) === parseInt(id));
+            if(item) {
+                document.getElementById('input-titulo-top-historico').value = item.titulo; 
+                document.getElementById('input-visitas-top-historico').value = item.visitas;
+                document.getElementById('input-tipo-top-historico').value = normalizarTipo(item.tipo) === 'articulo' ? 'Articulo' : 'Cuento';
+                editandoIdTopHistorico = id; document.getElementById('btn-guardar-top-historico').innerText = "Actualizar en Top Histórico";
+            }
+        }
+
+        async function eliminarTopHistorico(id) {
+            if(await customConfirm("¿Estás seguro de que deseas eliminar este contenido del Top Histórico?")) {
+                topHistoricoDB = topHistoricoDB.filter(i => parseInt(i.id) !== parseInt(id));
+                await syncToCloud('Top_Historico', topHistoricoDB); renderTablaTopHistoricoRegistro();
+            }
+        }
+
+        function renderTablaTopHistoricoRegistro() {
+            const tbody = document.getElementById('tabla-registro-top-historico'); tbody.innerHTML = '';
+            const ordenados = [...topHistoricoDB].sort((a, b) => parseInt(b.visitas) - parseInt(a.visitas));
+            ordenados.forEach(item => {
+                const tipoNormalizado = normalizarTipo(item.tipo);
+                const tipoColor = tipoNormalizado === 'articulo' ? 'text-sky-600 bg-sky-50' : 'text-emerald-600 bg-emerald-50';
+                const textoTipo = tipoNormalizado === 'articulo' ? 'Artículo' : 'Cuento';
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3"><span class="px-2 py-1 rounded text-[10px] font-bold ${tipoColor}">${textoTipo}</span></td>
+                        <td class="p-3 text-slate-700 font-medium truncate max-w-[200px]" title="${item.titulo}">${item.titulo}</td>
+                        <td class="p-3 text-right text-slate-600 font-black">${parseInt(item.visitas).toLocaleString('es-CO')}</td>
+                        <td class="p-3 flex justify-center gap-2">
+                            <button type="button" onclick="editarTopHistorico(${item.id})" class="text-blue-600 hover:text-blue-800 text-xs font-bold underline">Editar</button>
+                            <button type="button" onclick="eliminarTopHistorico(${item.id})" class="text-red-600 hover:text-red-800 text-xs font-bold underline">Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
 
         document.getElementById('formContenido').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -967,7 +1087,6 @@
             });
         }
 
-        // --- NUEVO: LÓGICA DE REGISTRO USUARIOS POR PAÍS (HISTÓRICO) ---
         document.getElementById('formUsuariosPais').addEventListener('submit', async function(e) {
             e.preventDefault();
             const inputPais = document.getElementById('input-pais-historico').value;
@@ -1025,7 +1144,6 @@
             });
         }
 
-        // --- NUEVO: LÓGICA DE REGISTRO USUARIOS POR PAÍS (ÚLTIMO MES) ---
         document.getElementById('formUsuariosPaisMensual').addEventListener('submit', async function(e) {
             e.preventDefault();
             const inputPais = document.getElementById('input-pais-mensual').value;
@@ -1105,7 +1223,7 @@
             document.getElementById('kpi-articulos-bajos').innerText = artBajos.toLocaleString('es-CO');
             document.getElementById('kpi-cuentos-bajos').innerText = cuentosBajos.toLocaleString('es-CO');
 
-            renderTopContenidos(articulos, cuentos);
+            renderTopHistoricoDashboard();
             renderTopMensualDashboard();
             renderTopPaisDashboard();
 
@@ -1155,23 +1273,26 @@
             renderChartLecturasMensuales();
         }
 
-        function renderTopContenidos(articulos, cuentos) {
+        // --- RENDERIZAR TABLAS TOP HISTÓRICO (MANUAL) DASHBOARD ---
+        function renderTopHistoricoDashboard() {
             const tbodyArticulos = document.getElementById('tabla-top-articulos');
             const tbodyCuentos = document.getElementById('tabla-top-cuentos');
             
             tbodyArticulos.innerHTML = '';
             tbodyCuentos.innerHTML = '';
             
-            const topArticulos = articulos
-                .filter(item => (parseInt(item.visitas) || 0) >= 1000)
-                .sort((a, b) => (parseInt(b.visitas) || 0) - (parseInt(a.visitas) || 0));
+            const topArticulos = topHistoricoDB
+                .filter(item => normalizarTipo(item.tipo) === 'articulo')
+                .sort((a, b) => (parseInt(b.visitas) || 0) - (parseInt(a.visitas) || 0))
+                .slice(0, 10);
 
-            const topCuentos = cuentos
-                .filter(item => (parseInt(item.visitas) || 0) >= 1000)
-                .sort((a, b) => (parseInt(b.visitas) || 0) - (parseInt(a.visitas) || 0));
+            const topCuentos = topHistoricoDB
+                .filter(item => normalizarTipo(item.tipo) === 'cuento')
+                .sort((a, b) => (parseInt(b.visitas) || 0) - (parseInt(a.visitas) || 0))
+                .slice(0, 10);
 
             if (topArticulos.length === 0) {
-                tbodyArticulos.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500 font-medium">No hay artículos registrados con 1.000 o más lecturas en el inventario.</td></tr>`;
+                tbodyArticulos.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500 font-medium">No hay artículos registrados en el Top Histórico.</td></tr>`;
             } else {
                 topArticulos.forEach((item, index) => {
                     tbodyArticulos.innerHTML += `
@@ -1185,7 +1306,7 @@
             }
 
             if (topCuentos.length === 0) {
-                tbodyCuentos.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500 font-medium">No hay cuentos registrados con 1.000 o más lecturas en el inventario.</td></tr>`;
+                tbodyCuentos.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500 font-medium">No hay cuentos registrados en el Top Histórico.</td></tr>`;
             } else {
                 topCuentos.forEach((item, index) => {
                     tbodyCuentos.innerHTML += `
@@ -1199,6 +1320,7 @@
             }
         }
 
+        // --- RENDERIZAR TABLAS TOP MENSUAL (MANUAL) DASHBOARD ---
         function renderTopMensualDashboard() {
             const tbodyArticulos = document.getElementById('tabla-top-mensual-articulos');
             const tbodyCuentos = document.getElementById('tabla-top-mensual-cuentos');
@@ -1243,7 +1365,7 @@
             }
         }
 
-        // --- NUEVO: RENDERIZAR TABLAS PAÍS DASHBOARD ---
+        // --- RENDERIZAR TABLAS PAÍS DASHBOARD ---
         function renderTopPaisDashboard() {
             const tbodyHistorico = document.getElementById('tabla-pais-historico');
             const tbodyMensual = document.getElementById('tabla-pais-mensual');
