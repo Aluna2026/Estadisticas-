@@ -91,16 +91,11 @@
         <section id="vista-dashboard" class="max-w-5xl mx-auto space-y-6 hidden">
             <h1 class="text-2xl font-bold text-slate-800 border-b pb-4">Volumen de Contenidos Registrados</h1>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-4">
                 <div class="card text-center flex flex-col justify-center border-t-4 border-t-purple-500">
                     <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Vistas totales de la página</h2>
                     <p id="kpi-vistas-totales" class="text-3xl font-black text-purple-600 mt-2">0</p>
                     <p class="text-[10px] text-slate-400 mt-2">Muestra el volumen acumulado de accesos al sitio.</p>
-                </div>
-                <div class="card text-center flex flex-col justify-center border-t-4 border-t-amber-500">
-                    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Lecturas totales</h2>
-                    <p id="kpi-lecturas-totales" class="text-3xl font-black text-amber-600 mt-2">0</p>
-                    <p class="text-[10px] text-slate-400 mt-2">Suma automática del historial de Lecturas Anuales.</p>
                 </div>
                 <div class="card text-center flex flex-col justify-center border-t-4 border-t-sky-500">
                     <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Total Artículos</h2>
@@ -217,7 +212,7 @@
             </div>
 
             <!-- TABLAS DE TOP USUARIOS POR PAÍS (HISTÓRICO Y ÚLTIMO MES) -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                 <div class="card p-0 overflow-hidden border-none shadow-md">
                     <h2 class="text-base font-bold text-slate-800 p-4 border-b bg-white">Top Usuarios por País (Histórico)</h2>
                     <div class="overflow-auto table-scroll max-h-[350px]">
@@ -250,17 +245,6 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                <div class="card text-center flex flex-col justify-center border-t-4 border-t-rose-500 shadow-md">
-                    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Artículos por debajo de 500 lecturas</h2>
-                    <p id="kpi-articulos-bajos" class="text-4xl font-black text-rose-600 mt-2">0</p>
-                </div>
-                <div class="card text-center flex flex-col justify-center border-t-4 border-t-orange-500 shadow-md">
-                    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Cuentos por debajo de 100 lecturas</h2>
-                    <p id="kpi-cuentos-bajos" class="text-4xl font-black text-orange-600 mt-2">0</p>
                 </div>
             </div>
 
@@ -404,7 +388,7 @@
                                 <input type="number" id="input-visitas-inv" required class="w-full border border-slate-300 rounded p-2 text-sm outline-none">
                             </div>
                         </div>
-                        <p class="text-[10px] text-slate-500 mt-1">El sistema usará estos datos para las métricas globales y alertas de bajas lecturas.</p>
+                        <p class="text-[10px] text-slate-500 mt-1">El sistema usará estos datos para las métricas globales.</p>
                         <button type="submit" id="btn-guardar-form" class="w-full bg-slate-800 text-white font-bold py-3 rounded hover:bg-slate-700 text-sm transition mt-2">
                             Guardar Contenido
                         </button>
@@ -647,7 +631,7 @@
         let lecturasMensualesDB = []; 
         let metricasGlobales = [];
         let topMensualDB = [];
-        let topHistoricoDB = []; // NUEVA VARIABLE PARA TOP 10 HISTORICO
+        let topHistoricoDB = []; 
         let usuariosPaisDB = [];
         let usuariosPaisMensualDB = [];
 
@@ -756,7 +740,6 @@
             btn.innerText = "Actualizar Vistas"; btn.disabled = false;
         });
 
-        // --- NUEVO: TOP HISTORICO MANUAL ---
         document.getElementById('formTopHistorico').addEventListener('submit', async function(e) {
             e.preventDefault();
             const inputTitulo = document.getElementById('input-titulo-top-historico').value;
@@ -910,9 +893,6 @@
             }
             await syncToCloud('Lecturas_Anuales', lecturasAnualesDB); 
             
-            const totalLec = lecturasAnualesDB.reduce((sum, item) => sum + (parseInt(item.lecturas) || 0), 0);
-            document.getElementById('kpi-lecturas-totales').innerText = totalLec.toLocaleString('es-CO');
-
             this.reset(); renderTablaAnuales();
             btn.innerText = "Guardar Lecturas"; btn.disabled = false;
         });
@@ -930,9 +910,6 @@
                 lecturasAnualesDB = lecturasAnualesDB.filter(i => parseInt(i.año) !== parseInt(año)); 
                 await syncToCloud('Lecturas_Anuales', lecturasAnualesDB); 
                 
-                const totalLec = lecturasAnualesDB.reduce((sum, item) => sum + (parseInt(item.lecturas) || 0), 0);
-                document.getElementById('kpi-lecturas-totales').innerText = totalLec.toLocaleString('es-CO');
-
                 renderTablaAnuales();
             }
         }
@@ -1208,20 +1185,11 @@
                 document.getElementById('kpi-vistas-totales').innerText = (parseInt(metricasGlobales[0].vistas_totales) || 0).toLocaleString('es-CO');
             }
 
-            const totalLecturasAnuales = lecturasAnualesDB.reduce((sum, item) => sum + (parseInt(item.lecturas) || 0), 0);
-            document.getElementById('kpi-lecturas-totales').innerText = totalLecturasAnuales.toLocaleString('es-CO');
-
             const articulos = inventario.filter(i => normalizarTipo(i.tipo) === 'articulo');
             const cuentos = inventario.filter(i => normalizarTipo(i.tipo) === 'cuento');
             
             document.getElementById('kpi-articulos').innerText = articulos.length.toLocaleString('es-CO');
             document.getElementById('kpi-cuentos').innerText = cuentos.length.toLocaleString('es-CO');
-
-            const artBajos = articulos.filter(i => (parseInt(i.visitas) || 0) < 500).length;
-            const cuentosBajos = cuentos.filter(i => (parseInt(i.visitas) || 0) < 100).length;
-            
-            document.getElementById('kpi-articulos-bajos').innerText = artBajos.toLocaleString('es-CO');
-            document.getElementById('kpi-cuentos-bajos').innerText = cuentosBajos.toLocaleString('es-CO');
 
             renderTopHistoricoDashboard();
             renderTopMensualDashboard();
@@ -1240,7 +1208,15 @@
             const ordenadosAnuales = [...lecturasAnualesDB].sort((a, b) => parseInt(a.año) - parseInt(b.año));
             chartAnualesInst = new Chart(document.getElementById('chartAnuales').getContext('2d'), {
                 type: 'bar',
-                data: { labels: ordenadosAnuales.map(i => i.año.toString()), datasets: [{ label: 'Lecturas', data: ordenadosAnuales.map(i => parseInt(i.lecturas)), backgroundColor: '#65a30d', borderRadius: 4 }] },
+                data: { 
+                    labels: ordenadosAnuales.map(i => i.año.toString()), 
+                    datasets: [{ 
+                        label: 'Lecturas', 
+                        data: ordenadosAnuales.map(i => parseInt(i.lecturas)), 
+                        backgroundColor: ordenadosAnuales.map((_, index) => index === ordenadosAnuales.length - 1 ? '#eab308' : '#65a30d'), 
+                        borderRadius: 4 
+                    }] 
+                },
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
